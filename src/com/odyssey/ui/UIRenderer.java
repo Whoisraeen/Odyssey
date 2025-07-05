@@ -251,7 +251,7 @@ public class UIRenderer {
         // End command recording and execute
         if (isRecording) {
             commandBuffer.end();
-            commandBuffer.execute(renderContext);
+            commandBuffer.execute();
             isRecording = false;
         }
         

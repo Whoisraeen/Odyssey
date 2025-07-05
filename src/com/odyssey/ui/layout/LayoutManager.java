@@ -266,4 +266,15 @@ public abstract class LayoutManager {
     protected int getAvailableHeight() {
         return parent.getHeight() - parent.getPaddingTop() - parent.getPaddingBottom();
     }
+    
+    /**
+     * Request a layout pass for the parent component
+     */
+    public void requestLayout() {
+        // Mark the parent as needing layout
+        // In a real implementation, this would queue a layout pass
+        if (parent != null) {
+            parent.invalidate();
+        }
+    }
 }

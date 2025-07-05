@@ -103,7 +103,7 @@ public class UIManager {
     private void initializeOnUIThread() {
         try {
             // Initialize text rendering
-            this.textRenderer = FontManager.getInstance().getTextRenderer();
+            this.textRenderer = FontManager.getInstance().createTextRenderer(800, 600);
             if (textRenderer == null) {
                 System.err.println("UIManager: Failed to initialize text renderer");
                 return;
@@ -147,10 +147,10 @@ public class UIManager {
         if (uiRenderer == null) return;
         
         // Update animations
-        animationManager.update(deltaTime);
+        animationManager.update(System.currentTimeMillis());
         
         // Perform layout if needed
-        layoutManager.performLayout();
+        layoutManager.layoutChildren(0, 0, 800, 600);
         
         // Render current screen
         if (currentScreen != null) {

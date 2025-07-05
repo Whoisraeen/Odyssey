@@ -131,4 +131,16 @@ public class InputManager {
         if (isActionPressed(GameAction.MOVE_BACK)) y -= 1;
         return new Vector2f(x, y).normalize();
     }
+    
+    public double getMouseX() {
+        double[] xpos = new double[1];
+        glfwGetCursorPos(window, xpos, null);
+        return xpos[0];
+    }
+    
+    public double getMouseY() {
+        double[] ypos = new double[1];
+        glfwGetCursorPos(window, null, ypos);
+        return ypos[0];
+    }
 }

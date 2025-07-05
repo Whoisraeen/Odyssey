@@ -257,6 +257,15 @@ public class Button extends UIComponent {
         invalidate(); // Redraw when state changes
     }
     
+    /**
+     * Programmatically perform a click on this button
+     */
+    public void performClick() {
+        if (onClickListener != null && isEnabled()) {
+            onClickListener.onClick(this);
+        }
+    }
+    
     @Override
     public boolean onMouseClick(int mouseX, int mouseY, int button) {
         if (!isEnabled() || !isVisible()) {

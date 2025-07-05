@@ -24,8 +24,16 @@ public abstract class UIComponent {
     protected UIComponent parent;
     protected List<UIComponent> children = new ArrayList<>();
     
+    // Visibility enum
+    public enum Visibility {
+        VISIBLE,
+        INVISIBLE,
+        GONE
+    }
+    
     // State
     protected boolean visible = true;
+    protected Visibility visibility = Visibility.VISIBLE;
     protected boolean enabled = true;
     protected boolean focusable = false;
     protected boolean focused = false;
@@ -70,18 +78,18 @@ public abstract class UIComponent {
     public abstract void render(UIRenderer renderer, float deltaTime);
     
     /**
-     * Measure the component's desired size
+     * Measure the component
      * @param widthSpec width constraint
      * @param heightSpec height constraint
      */
-    public void measure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
-        measuredWidth = MeasureSpec.getSize(widthSpec);
-        measuredHeight = MeasureSpec.getSize(heightSpec);
+    public void measure(int widthSpec, int heightSpec) {
+        measuredWidth = LayoutManager.MeasureSpec.getSize(widthSpec);
+        measuredHeight = LayoutManager.MeasureSpec.getSize(heightSpec);
         
         onMeasure(widthSpec, heightSpec);
     }
     
-    protected void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+    protected void onMeasure(int widthSpec, int heightSpec) {
         // Default implementation - subclasses can override
     }
     
@@ -240,6 +248,10 @@ public abstract class UIComponent {
         requestLayout();
     }
     
+    public List<UIComponent> getChildren() {
+        return new ArrayList<>(children);
+    }
+    
     // Animation
     public void startAnimation(Animator animator) {
         animators.add(animator);
@@ -308,6 +320,14 @@ public abstract class UIComponent {
     public boolean isVisible() { return visible; }
     public void setVisible(boolean visible) { 
         this.visible = visible;
+        this.visibility = visible ? Visibility.VISIBLE : Visibility.INVISIBLE;
+        invalidate();
+    }
+    
+    public Visibility getVisibility() { return visibility; }
+    public void setVisibility(Visibility visibility) {
+        this.visibility = visibility;
+        this.visible = (visibility == Visibility.VISIBLE);
         invalidate();
     }
     

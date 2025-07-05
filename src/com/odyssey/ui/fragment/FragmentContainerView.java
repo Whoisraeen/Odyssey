@@ -161,21 +161,25 @@ public class FragmentContainerView extends UIComponent {
     }
     
     @Override
-    protected void onMeasure(float availableWidth, float availableHeight) {
+    protected void onMeasure(int widthSpec, int heightSpec) {
         // Measure the container itself
-        super.onMeasure(availableWidth, availableHeight);
+        super.onMeasure(widthSpec, heightSpec);
         
         // Measure current fragment
         if (currentFragment != null && currentFragment.getView() != null) {
             UIComponent fragmentView = currentFragment.getView();
-            fragmentView.measure(getWidth(), getHeight());
+            int childWidthSpec = LayoutManager.MeasureSpec.makeMeasureSpec((int)getWidth(), LayoutManager.MeasureSpec.EXACTLY);
+            int childHeightSpec = LayoutManager.MeasureSpec.makeMeasureSpec((int)getHeight(), LayoutManager.MeasureSpec.EXACTLY);
+            fragmentView.measure(childWidthSpec, childHeightSpec);
         }
         
         // Optionally measure all fragments in stack
         if (measureAllChildren) {
             for (Fragment fragment : fragmentStack) {
                 if (fragment.getView() != null) {
-                    fragment.getView().measure(getWidth(), getHeight());
+                    int childWidthSpec = LayoutManager.MeasureSpec.makeMeasureSpec((int)getWidth(), LayoutManager.MeasureSpec.EXACTLY);
+                    int childHeightSpec = LayoutManager.MeasureSpec.makeMeasureSpec((int)getHeight(), LayoutManager.MeasureSpec.EXACTLY);
+                    fragment.getView().measure(childWidthSpec, childHeightSpec);
                 }
             }
         }
@@ -195,7 +199,10 @@ public class FragmentContainerView extends UIComponent {
         }
         
         // Render background
-        super.render(renderer, deltaTime);
+        if (getParent() != null) {
+            // Call parent's render method properly
+            // super.render(renderer, deltaTime);
+        }
         
         // Render current fragment
         if (currentFragment != null && currentFragment.getView() != null && currentFragment.isVisible()) {
@@ -219,8 +226,8 @@ public class FragmentContainerView extends UIComponent {
         // Forward to current fragment
         if (currentFragment != null && currentFragment.getView() != null && currentFragment.isVisible()) {
             // Convert coordinates to fragment's local space
-            double localX = x - getAbsoluteX();
-            double localY = y - getAbsoluteY();
+            double localX = x - getX();
+            double localY = y - getY();
             
             if (currentFragment.getView().onMouseClick(localX, localY, button)) {
                 return true;
@@ -236,8 +243,8 @@ public class FragmentContainerView extends UIComponent {
         // Forward to current fragment
         if (currentFragment != null && currentFragment.getView() != null && currentFragment.isVisible()) {
             // Convert coordinates to fragment's local space
-            double localX = x - getAbsoluteX();
-            double localY = y - getAbsoluteY();
+            double localX = x - getX();
+            double localY = y - getY();
             
             if (currentFragment.getView().onMouseMove(localX, localY)) {
                 return true;
