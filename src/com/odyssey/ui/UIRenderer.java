@@ -433,6 +433,30 @@ public class UIRenderer {
         drawRect(centerX - radius, centerY - radius, radius * 2, radius * 2, color, radius);
     }
     
+    public void drawRectOutline(float x, float y, float width, float height, int color, int thickness) {
+        // Draw outline as four rectangles forming a border
+        drawRect(x, y, width, thickness, color); // Top
+        drawRect(x, y + height - thickness, width, thickness, color); // Bottom
+        drawRect(x, y, thickness, height, color); // Left
+        drawRect(x + width - thickness, y, thickness, height, color); // Right
+    }
+    
+    public void drawRoundedRect(float x, float y, float width, float height, float cornerRadius, int color) {
+        drawRect(x, y, width, height, color, cornerRadius);
+    }
+    
+    public void drawRoundedRectOutline(float x, float y, float width, float height, float cornerRadius, int color, int thickness) {
+        // For rounded rectangles, we'll draw a filled rounded rect and then a smaller one inside to create outline effect
+        // This is a simplified approach - a proper implementation would use more sophisticated geometry
+        drawRoundedRect(x, y, width, height, cornerRadius, color);
+        if (width > thickness * 2 && height > thickness * 2) {
+            // Draw inner rect with background color to create outline effect
+            // Note: This assumes background is transparent - in a real implementation you'd need the actual background color
+            drawRoundedRect(x + thickness, y + thickness, width - thickness * 2, height - thickness * 2, 
+                          Math.max(0, cornerRadius - thickness), 0x00000000);
+        }
+    }
+    
     public void setClipRect(float x, float y, float width, float height) {
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         GL11.glScissor((int) x, (int) y, (int) width, (int) height);
@@ -440,6 +464,39 @@ public class UIRenderer {
     
     public void clearClipRect() {
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
+    }
+    
+    private final Stack<ClipRect> clipStack = new Stack<>();
+    private boolean clipping = false;
+    
+    private static class ClipRect {
+        float x, y, width, height;
+        ClipRect(float x, float y, float width, float height) {
+            this.x = x; this.y = y; this.width = width; this.height = height;
+        }
+    }
+    
+    public boolean isClipping() {
+        return clipping;
+    }
+    
+    public void pushClip(float x, float y, float width, float height) {
+        clipStack.push(new ClipRect(x, y, width, height));
+        setClipRect(x, y, width, height);
+        clipping = true;
+    }
+    
+    public void popClip() {
+        if (!clipStack.isEmpty()) {
+            clipStack.pop();
+            if (!clipStack.isEmpty()) {
+                ClipRect clip = clipStack.peek();
+                setClipRect(clip.x, clip.y, clip.width, clip.height);
+            } else {
+                clearClipRect();
+                clipping = false;
+            }
+        }
     }
     
     public void cleanup() {

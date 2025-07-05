@@ -1,7 +1,7 @@
 package com.odyssey.environment.particle;
 
 import com.odyssey.rendering.ShaderManager;
-import com.odyssey.rendering.scene.Camera;
+import com.odyssey.rendering.Camera;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;

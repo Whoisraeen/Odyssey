@@ -2,7 +2,7 @@ package com.odyssey.entity;
 
 import com.odyssey.core.VoxelEngine;
 import com.odyssey.environment.EnvironmentManager;
-import com.odyssey.rendering.scene.Camera;
+import com.odyssey.rendering.Camera;
 
 import java.util.ArrayList;
 import java.util.List;

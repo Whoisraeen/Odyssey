@@ -4,7 +4,7 @@ import com.odyssey.core.VoxelEngine;
 import com.odyssey.environment.EnvironmentManager;
 import com.odyssey.input.GameAction;
 import com.odyssey.input.InputManager;
-import com.odyssey.rendering.scene.Camera;
+import com.odyssey.rendering.Camera;
 import com.odyssey.world.BlockType;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;

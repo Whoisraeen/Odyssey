@@ -6,7 +6,7 @@ import com.odyssey.input.GameAction;
 import com.odyssey.input.InputManager;
 import org.joml.Vector2f;
 import com.odyssey.player.Player;
-import com.odyssey.rendering.scene.Camera;
+import com.odyssey.rendering.Camera;
 import com.odyssey.rendering.ui.Crosshair;
 import com.odyssey.rendering.ui.Hotbar;
 import com.odyssey.rendering.ui.UIRenderer;

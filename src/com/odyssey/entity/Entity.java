@@ -2,7 +2,7 @@ package com.odyssey.entity;
 
 import com.odyssey.core.VoxelEngine;
 import com.odyssey.environment.EnvironmentManager;
-import com.odyssey.rendering.scene.Camera;
+import com.odyssey.rendering.Camera;
 import org.joml.Vector3f;
 
 public abstract class Entity {
@@ -49,4 +49,4 @@ public abstract class Entity {
     public boolean isRemoved() {
         return removed;
     }
-} 
+}

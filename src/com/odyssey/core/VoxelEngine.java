@@ -2,7 +2,7 @@ package com.odyssey.core;
 
 import com.odyssey.rendering.ShaderManager;
 
-import com.odyssey.rendering.scene.Camera;
+import com.odyssey.rendering.Camera;
 import com.odyssey.rendering.AdvancedRenderingPipeline;
 import com.odyssey.rendering.scene.Scene;
 import com.odyssey.player.Player;
@@ -93,6 +93,10 @@ public class VoxelEngine {
         // Find a safe spawn location using SpawnFinder
         Vector3f spawnLocation = SpawnFinder.findSafeSpawnLocation(worldGenerator);
         this.player = new Player(spawnLocation.x, spawnLocation.y, spawnLocation.z);
+        
+        // Position camera at player location
+        camera.setPosition(spawnLocation.x, spawnLocation.y + 1.7f, spawnLocation.z);
+        camera.setPitch(-20.0f); // Look slightly downward to see terrain
         this.selectionBoxRenderer = new SelectionBoxRenderer();
         this.entityManager = new EntityManager();
         this.environmentManager = new EnvironmentManager(soundManager);
@@ -105,15 +109,27 @@ public class VoxelEngine {
         // Load shaders
         this.chunkShaderProgram = shaderManager.loadProgram("shaders/geometry.vert", "shaders/geometry.frag");
 
-        // Create and generate a few chunks for testing
-        for (int x = 0; x < 4; x++) {
-            for (int z = 0; z < 4; z++) {
+        // Create and generate chunks around spawn location
+        ChunkPosition spawnChunk = new ChunkPosition(
+            (int)Math.floor(spawnLocation.x / CHUNK_SIZE),
+            0,
+            (int)Math.floor(spawnLocation.z / CHUNK_SIZE)
+        );
+        
+        System.out.println("Player spawn location: " + spawnLocation);
+        System.out.println("Spawn chunk: " + spawnChunk.x + ", " + spawnChunk.z);
+        
+        // Generate chunks in a larger area around spawn
+        for (int x = spawnChunk.x - 8; x <= spawnChunk.x + 8; x++) {
+            for (int z = spawnChunk.z - 8; z <= spawnChunk.z + 8; z++) {
                 ChunkPosition pos = new ChunkPosition(x, 0, z);
                 Chunk chunk = new Chunk(pos);
                 worldGenerator.generateChunk(chunk);
                 chunks.put(pos, chunk);
             }
         }
+        
+        System.out.println("Generated " + chunks.size() + " chunks around spawn");
         
         // Request initial mesh generation for all chunks
         for (Chunk chunk : chunks.values()) {
@@ -150,16 +166,16 @@ public class VoxelEngine {
         
         performRandomTicks();
 
-        // Simple chunk loading/meshing around the player for now
-        // A proper chunk manager would be better.
+        // Load chunks around the player
         ChunkPosition playerChunkPos = new ChunkPosition(
             (int)Math.floor(player.getPosition().x / CHUNK_SIZE),
             0,
             (int)Math.floor(player.getPosition().z / CHUNK_SIZE)
         );
 
-        for (int x = playerChunkPos.x - 2; x <= playerChunkPos.x + 2; x++) {
-            for (int z = playerChunkPos.z - 2; z <= playerChunkPos.z + 2; z++) {
+        // Load chunks in a larger radius around player
+        for (int x = playerChunkPos.x - RENDER_DISTANCE; x <= playerChunkPos.x + RENDER_DISTANCE; x++) {
+            for (int z = playerChunkPos.z - RENDER_DISTANCE; z <= playerChunkPos.z + RENDER_DISTANCE; z++) {
                 ChunkPosition pos = new ChunkPosition(x, 0, z);
                 if (!chunks.containsKey(pos)) {
                     Chunk chunk = new Chunk(pos);
@@ -239,9 +255,11 @@ public class VoxelEngine {
             }
         }
         
-        // Only log if we have no chunks with VAOs to avoid spam
+        // Debug chunk rendering status
         if (chunksWithVao == 0 && totalChunks > 0) {
-            // This is normal during the first few frames while meshes are being generated
+            System.out.println("Warning: " + totalChunks + " chunks loaded but 0 have VAOs (meshes still generating)");
+        } else if (chunksWithVao > 0) {
+            System.out.println("Rendering " + chunksWithVao + "/" + totalChunks + " chunks with VAOs");
         }
         
         // Re-add default lighting

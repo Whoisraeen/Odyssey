@@ -1,7 +1,7 @@
 package com.odyssey.rendering.lighting;
 
 import com.odyssey.rendering.scene.Light;
-import com.odyssey.rendering.scene.Camera;
+import com.odyssey.rendering.Camera;
 import com.odyssey.rendering.scene.RenderObject;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;

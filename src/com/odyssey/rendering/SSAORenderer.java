@@ -1,6 +1,6 @@
 package com.odyssey.rendering;
 
-import com.odyssey.rendering.scene.Camera;
+import com.odyssey.rendering.Camera;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import java.nio.ByteBuffer;

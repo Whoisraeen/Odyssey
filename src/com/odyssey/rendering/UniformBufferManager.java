@@ -1,6 +1,6 @@
 package com.odyssey.rendering;
 
-import com.odyssey.rendering.scene.Camera;
+import com.odyssey.rendering.Camera;
 import com.odyssey.rendering.scene.Light;
 import com.odyssey.rendering.scene.RenderObject;
 
@@ -22,4 +22,4 @@ public class UniformBufferManager {
     public void updateTimeUniforms(float deltaTime) {}
     
     public void cleanup() {}
-} 
+}

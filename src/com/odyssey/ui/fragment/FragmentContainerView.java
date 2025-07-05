@@ -148,15 +148,15 @@ public class FragmentContainerView extends UIComponent {
     }
     
     @Override
-    protected void onLayout() {
-        super.onLayout();
+    protected void onLayout(boolean changed, float left, float top, float right, float bottom) {
+        super.onLayout(changed, left, top, right, bottom);
         
         // Layout current fragment to fill container
         if (currentFragment != null && currentFragment.getView() != null) {
             UIComponent fragmentView = currentFragment.getView();
             fragmentView.setPosition(0, 0);
             fragmentView.setSize(getWidth(), getHeight());
-            fragmentView.layout();
+            fragmentView.layout(0, 0, getWidth(), getHeight());
         }
     }
     

@@ -1,6 +1,7 @@
 package com.odyssey.ui;
 
 import com.odyssey.ui.layout.LayoutParams;
+import com.odyssey.ui.layout.MeasureSpec;
 import com.odyssey.ui.animation.Animator;
 
 import java.util.ArrayList;
@@ -51,6 +52,14 @@ public abstract class UIComponent {
     
     public UIComponent() {
         this.layoutParams = new LayoutParams();
+    }
+    
+    public UIComponent(float x, float y, float width, float height) {
+        this.layoutParams = new LayoutParams();
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
     }
     
     // Abstract methods that subclasses must implement
@@ -249,6 +258,12 @@ public abstract class UIComponent {
     public float getHeight() { return height; }
     public float getMeasuredWidth() { return measuredWidth; }
     public float getMeasuredHeight() { return measuredHeight; }
+    
+    // Position methods for layout
+    public float getLeft() { return x; }
+    public float getTop() { return y; }
+    public float getRight() { return x + width; }
+    public float getBottom() { return y + height; }
     
     public float getMinWidth() { return 0.0f; }
     public float getMinHeight() { return 0.0f; }

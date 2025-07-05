@@ -5,6 +5,9 @@ import com.odyssey.rendering.ui.TextRenderer;
 import com.odyssey.ui.threading.UIThread;
 import com.odyssey.ui.threading.Handler;
 import com.odyssey.ui.threading.Message;
+import com.odyssey.ui.layout.LayoutManager;
+import com.odyssey.ui.animation.AnimationManager;
+import com.odyssey.input.InputManager;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
@@ -275,6 +278,10 @@ public class UIManager {
     
     public AnimationManager getAnimationManager() {
         return animationManager;
+    }
+    
+    public InputManager getInputManager() {
+        return inputManager;
     }
     
     public UITheme getCurrentTheme() {

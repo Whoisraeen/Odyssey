@@ -2,6 +2,7 @@ package com.odyssey.ui.lifecycle;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import com.odyssey.ui.fragment.FragmentManager;
 
 /**
  * OnBackPressedDispatcher for handling back button events
@@ -163,7 +164,7 @@ public class OnBackPressedDispatcher {
 /**
  * Abstract callback for handling back press events
  */
-abstract class OnBackPressedCallback {
+public abstract class OnBackPressedCallback {
     private boolean enabled;
     private final List<OnBackPressedDispatcher.OnBackPressedCancellable> cancellables = new ArrayList<>();
     
@@ -220,7 +221,7 @@ abstract class OnBackPressedCallback {
 /**
  * OnBackPressedDispatcherOwner interface
  */
-interface OnBackPressedDispatcherOwner {
+public interface OnBackPressedDispatcherOwner {
     /**
      * Get the OnBackPressedDispatcher
      */
@@ -230,7 +231,7 @@ interface OnBackPressedDispatcherOwner {
 /**
  * Simple implementation of OnBackPressedDispatcherOwner
  */
-class SimpleOnBackPressedDispatcherOwner implements OnBackPressedDispatcherOwner {
+public class SimpleOnBackPressedDispatcherOwner implements OnBackPressedDispatcherOwner {
     private final OnBackPressedDispatcher onBackPressedDispatcher = new OnBackPressedDispatcher();
     
     @Override

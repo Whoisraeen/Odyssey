@@ -1,7 +1,7 @@
 package com.odyssey.rendering;
 
 import com.odyssey.core.PerformanceProfiler;
-import com.odyssey.rendering.scene.Camera;
+import com.odyssey.rendering.Camera;
 import com.odyssey.rendering.scene.RenderObject;
 import com.odyssey.rendering.scene.Scene;
 import java.util.Map;

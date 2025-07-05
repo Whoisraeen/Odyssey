@@ -173,7 +173,7 @@ public class Panel extends UIComponent {
     }
     
     @Override
-    public void render(UIRenderer renderer) {
+    public void render(UIRenderer renderer, float deltaTime) {
         if (!isVisible()) return;
         
         // Draw background
@@ -216,7 +216,7 @@ public class Panel extends UIComponent {
         // Render children
         for (UIComponent child : children) {
             if (child.isVisible()) {
-                child.render(renderer);
+                child.render(renderer, deltaTime);
             }
         }
         
@@ -312,20 +312,20 @@ public class Panel extends UIComponent {
     }
     
     @Override
-    public boolean onScroll(int mouseX, int mouseY, double deltaX, double deltaY) {
+    public boolean onScroll(double xOffset, double yOffset) {
         if (!isVisible() || !isEnabled()) {
             return false;
         }
-        
+
         // Forward to children
         for (int i = children.size() - 1; i >= 0; i--) {
             UIComponent child = children.get(i);
-            if (child.onScroll(mouseX, mouseY, deltaX, deltaY)) {
+            if (child.onScroll(xOffset, yOffset)) {
                 return true;
             }
         }
-        
-        return super.onScroll(mouseX, mouseY, deltaX, deltaY);
+
+        return super.onScroll(xOffset, yOffset);
     }
     
     /**

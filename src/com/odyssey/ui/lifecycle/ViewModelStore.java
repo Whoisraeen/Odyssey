@@ -48,7 +48,7 @@ public class ViewModelStore {
 /**
  * Base ViewModel class
  */
-abstract class ViewModel {
+public abstract class ViewModel {
     private volatile boolean cleared = false;
     
     /**
@@ -77,7 +77,7 @@ abstract class ViewModel {
 /**
  * ViewModelStoreOwner interface
  */
-interface ViewModelStoreOwner {
+public interface ViewModelStoreOwner {
     /**
      * Returns the ViewModelStore associated with this owner
      */
@@ -87,7 +87,7 @@ interface ViewModelStoreOwner {
 /**
  * ViewModelProvider for creating and retrieving ViewModels
  */
-class ViewModelProvider {
+public class ViewModelProvider {
     private final Factory factory;
     private final ViewModelStore store;
     
@@ -166,7 +166,7 @@ class ViewModelProvider {
 /**
  * Simple ViewModelStoreOwner implementation
  */
-class SimpleViewModelStoreOwner implements ViewModelStoreOwner {
+public class SimpleViewModelStoreOwner implements ViewModelStoreOwner {
     private final ViewModelStore viewModelStore = new ViewModelStore();
     
     @Override
@@ -185,7 +185,7 @@ class SimpleViewModelStoreOwner implements ViewModelStoreOwner {
 /**
  * HasDefaultViewModelProviderFactory interface
  */
-interface HasDefaultViewModelProviderFactory {
+public interface HasDefaultViewModelProviderFactory {
     /**
      * Returns the default ViewModelProvider.Factory
      */

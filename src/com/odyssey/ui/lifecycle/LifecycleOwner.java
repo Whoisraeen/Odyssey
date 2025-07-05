@@ -110,7 +110,7 @@ class Lifecycling {
 /**
  * Simple lifecycle owner implementation
  */
-class SimpleLifecycleOwner implements LifecycleOwner {
+public class SimpleLifecycleOwner implements LifecycleOwner {
     private final Lifecycle.LifecycleRegistry lifecycleRegistry;
     
     public SimpleLifecycleOwner() {

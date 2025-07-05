@@ -1,7 +1,7 @@
 package com.odyssey.rendering.clouds;
 
 import com.odyssey.rendering.ShaderManager;
-import com.odyssey.rendering.scene.Camera;
+import com.odyssey.rendering.Camera;
 import org.joml.Matrix4f;
 
 import static org.lwjgl.opengl.GL11.*;
