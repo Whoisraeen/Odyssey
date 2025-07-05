@@ -18,7 +18,7 @@ public class Label extends UIComponent {
     private String ellipsis = "...";
     
     // Text alignment within the label bounds
-    private TextRenderer.TextStyle.Alignment horizontalAlignment = TextRenderer.TextStyle.Alignment.LEFT;
+    private TextRenderer.TextAlign horizontalAlignment = TextRenderer.TextAlign.LEFT;
     private VerticalAlignment verticalAlignment = VerticalAlignment.TOP;
     
     public enum VerticalAlignment {
@@ -77,13 +77,13 @@ public class Label extends UIComponent {
         return textColor;
     }
     
-    public void setHorizontalAlignment(TextRenderer.TextStyle.Alignment alignment) {
+    public void setHorizontalAlignment(TextRenderer.TextAlign alignment) {
         this.horizontalAlignment = alignment;
         textStyle.setAlignment(alignment);
         invalidate();
     }
     
-    public TextRenderer.TextStyle.Alignment getHorizontalAlignment() {
+    public TextRenderer.TextAlign getHorizontalAlignment() {
         return horizontalAlignment;
     }
     
@@ -150,24 +150,24 @@ public class Label extends UIComponent {
         int charWidth = 8; // Approximate character width
         int lineHeight = 16; // Approximate line height
         
-        if (wordWrap && getWidth() > 0) {
+        if (wordWrap && (int) getWidth() > 0) {
             // Calculate wrapped text size
-            int availableWidth = getWidth() - getPaddingLeft() - getPaddingRight();
+            int availableWidth = (int) getWidth() - (int) getPaddingLeft() - (int) getPaddingRight();
             int charsPerLine = Math.max(1, availableWidth / charWidth);
             int lines = Math.min(maxLines, (int) Math.ceil((double) text.length() / charsPerLine));
             
             int textWidth = Math.min(text.length() * charWidth, availableWidth);
             int textHeight = lines * lineHeight;
             
-            setSize(textWidth + getPaddingLeft() + getPaddingRight(),
-                   textHeight + getPaddingTop() + getPaddingBottom());
+            setSize(textWidth + (int) getPaddingLeft() + (int) getPaddingRight(),
+                   textHeight + (int) getPaddingTop() + (int) getPaddingBottom());
         } else {
             // Single line or no wrapping
             int textWidth = text.length() * charWidth;
             int textHeight = lineHeight;
             
-            setSize(textWidth + getPaddingLeft() + getPaddingRight(),
-                   textHeight + getPaddingTop() + getPaddingBottom());
+            setSize(textWidth + (int) getPaddingLeft() + (int) getPaddingRight(),
+                   textHeight + (int) getPaddingTop() + (int) getPaddingBottom());
         }
     }
     
@@ -180,29 +180,29 @@ public class Label extends UIComponent {
     }
     
     @Override
-    public void render(UIRenderer renderer) {
+    public void render(UIRenderer renderer, float deltaTime) {
         if (!isVisible() || text.isEmpty()) return;
         
         // Draw background if set
         if (getBackgroundColor() != 0) {
             if (getCornerRadius() > 0) {
                 renderer.drawRoundedRect(
-                    getLeft(), getTop(), getRight(), getBottom(),
-                    getCornerRadius(), getBackgroundColor()
+                    (int) getLeft(), (int) getTop(), (int) getRight(), (int) getBottom(),
+                    (int) getCornerRadius(), getBackgroundColor()
                 );
             } else {
                 renderer.drawRect(
-                    getLeft(), getTop(), getRight(), getBottom(),
+                    (int) getLeft(), (int) getTop(), (int) getRight(), (int) getBottom(),
                     getBackgroundColor()
                 );
             }
         }
         
         // Calculate text position
-        int contentLeft = getLeft() + getPaddingLeft();
-        int contentTop = getTop() + getPaddingTop();
-        int contentWidth = getWidth() - getPaddingLeft() - getPaddingRight();
-        int contentHeight = getHeight() - getPaddingTop() - getPaddingBottom();
+        int contentLeft = (int) getLeft() + (int) getPaddingLeft();
+        int contentTop = (int) getTop() + (int) getPaddingTop();
+        int contentWidth = (int) getWidth() - (int) getPaddingLeft() - (int) getPaddingRight();
+        int contentHeight = (int) getHeight() - (int) getPaddingTop() - (int) getPaddingBottom();
         
         // Calculate text position based on alignment
         int textX = contentLeft;
@@ -300,8 +300,8 @@ public class Label extends UIComponent {
      */
     public void getPreferredSize(int[] outSize) {
         if (text.isEmpty()) {
-            outSize[0] = getPaddingLeft() + getPaddingRight();
-            outSize[1] = getPaddingTop() + getPaddingBottom();
+            outSize[0] = (int) getPaddingLeft() + (int) getPaddingRight();
+            outSize[1] = (int) getPaddingTop() + (int) getPaddingBottom();
             return;
         }
         
@@ -309,16 +309,16 @@ public class Label extends UIComponent {
         int charWidth = 8;
         int lineHeight = 16;
         
-        if (wordWrap && getWidth() > 0) {
-            int availableWidth = getWidth() - getPaddingLeft() - getPaddingRight();
+        if (wordWrap && (int) getWidth() > 0) {
+            int availableWidth = (int) getWidth() - (int) getPaddingLeft() - (int) getPaddingRight();
             int charsPerLine = Math.max(1, availableWidth / charWidth);
             int lines = Math.min(maxLines, (int) Math.ceil((double) text.length() / charsPerLine));
             
-            outSize[0] = Math.min(text.length() * charWidth, availableWidth) + getPaddingLeft() + getPaddingRight();
-            outSize[1] = lines * lineHeight + getPaddingTop() + getPaddingBottom();
+            outSize[0] = Math.min(text.length() * charWidth, availableWidth) + (int) getPaddingLeft() + (int) getPaddingRight();
+            outSize[1] = lines * lineHeight + (int) getPaddingTop() + (int) getPaddingBottom();
         } else {
-            outSize[0] = text.length() * charWidth + getPaddingLeft() + getPaddingRight();
-            outSize[1] = lineHeight + getPaddingTop() + getPaddingBottom();
+            outSize[0] = text.length() * charWidth + (int) getPaddingLeft() + (int) getPaddingRight();
+            outSize[1] = lineHeight + (int) getPaddingTop() + (int) getPaddingBottom();
         }
     }
     
@@ -346,7 +346,7 @@ public class Label extends UIComponent {
             return this;
         }
         
-        public Builder setHorizontalAlignment(TextRenderer.TextStyle.Alignment alignment) {
+        public Builder setHorizontalAlignment(TextRenderer.TextAlign alignment) {
             label.setHorizontalAlignment(alignment);
             return this;
         }

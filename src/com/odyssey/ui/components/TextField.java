@@ -80,7 +80,7 @@ public class TextField extends UIComponent {
         // Create text style
         textStyle = new TextRenderer.TextStyle()
             .setColor(textColor)
-            .setAlignment(TextRenderer.TextStyle.Alignment.LEFT);
+            .setAlignment(TextRenderer.TextAlign.LEFT);
         
         // Set default appearance
         setBackgroundColor(backgroundColor);
@@ -308,7 +308,7 @@ public class TextField extends UIComponent {
     }
     
     @Override
-    public void render(UIRenderer renderer) {
+    public void render(UIRenderer renderer, float deltaTime) {
         if (!isVisible()) return;
         
         // Update cursor blink
@@ -334,10 +334,10 @@ public class TextField extends UIComponent {
         }
         
         // Calculate text area
-        int textLeft = getLeft() + getPaddingLeft();
-        int textTop = getTop() + getPaddingTop();
-        int textWidth = getWidth() - getPaddingLeft() - getPaddingRight();
-        int textHeight = getHeight() - getPaddingTop() - getPaddingBottom();
+        int textLeft = (int) getLeft() + (int) getPaddingLeft();
+        int textTop = (int) getTop() + (int) getPaddingTop();
+        int textWidth = (int) getWidth() - (int) getPaddingLeft() - (int) getPaddingRight();
+        int textHeight = (int) getHeight() - (int) getPaddingTop() - (int) getPaddingBottom();
         
         // Set up clipping for text area
         renderer.pushClip(textLeft, textTop, textLeft + textWidth, textTop + textHeight);
@@ -348,7 +348,7 @@ public class TextField extends UIComponent {
             // Draw placeholder
             TextRenderer.TextStyle placeholderStyle = new TextRenderer.TextStyle()
                 .setColor(placeholderColor)
-                .setAlignment(TextRenderer.TextStyle.Alignment.LEFT);
+                .setAlignment(TextRenderer.TextAlign.LEFT);
             
             // Note: In real implementation, use actual TextRenderer
             // renderer.drawText(placeholder, textLeft - scrollOffset, textTop + textHeight / 2, placeholderStyle);
@@ -392,7 +392,7 @@ public class TextField extends UIComponent {
             requestFocus();
             
             // Calculate cursor position from mouse click
-            int textLeft = getLeft() + getPaddingLeft();
+            int textLeft = (int) getLeft() + (int) getPaddingLeft();
             int relativeX = mouseX - textLeft + scrollOffset;
             int charWidth = 8; // Approximate
             int newCursorPos = Math.max(0, Math.min(text.length(), relativeX / charWidth));
@@ -502,7 +502,8 @@ public class TextField extends UIComponent {
     }
     
     @Override
-    public boolean onCharInput(char character) {
+    public boolean onCharInput(int codepoint) {
+        char character = (char) codepoint;
         if (!isEnabled() || !isVisible() || !isFocused() || readOnly) {
             return false;
         }
@@ -528,9 +529,7 @@ public class TextField extends UIComponent {
         lastCursorBlink = System.currentTimeMillis();
     }
     
-    @Override
     protected void onFocusChanged(boolean focused) {
-        super.onFocusChanged(focused);
         if (focused) {
             resetCursorBlink();
         } else {

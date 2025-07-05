@@ -60,6 +60,19 @@ public class TextRenderer {
             this.alignment = alignment;
             return this;
         }
+        
+        public TextStyle setColor(int color) {
+            float r = ((color >> 16) & 0xFF) / 255.0f;
+            float g = ((color >> 8) & 0xFF) / 255.0f;
+            float b = (color & 0xFF) / 255.0f;
+            this.color = new Vector3f(r, g, b);
+            return this;
+        }
+        
+        public TextStyle setAlignment(TextAlign alignment) {
+            this.alignment = alignment;
+            return this;
+        }
     }
     
     private final int shaderProgram;

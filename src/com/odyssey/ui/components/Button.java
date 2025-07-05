@@ -46,7 +46,7 @@ public class Button extends UIComponent {
         // Create default text style
         textStyle = new TextRenderer.TextStyle()
             .setColor(textColor)
-            .setAlignment(TextRenderer.TextStyle.Alignment.CENTER);
+            .setAlignment(TextRenderer.TextAlign.CENTER);
         
         // Set default corner radius for modern look
         setCornerRadius(4.0f);
@@ -197,7 +197,7 @@ public class Button extends UIComponent {
     }
     
     @Override
-    public void render(UIRenderer renderer) {
+    public void render(UIRenderer renderer, float deltaTime) {
         if (!isVisible()) return;
         
         int currentButtonColor = getCurrentButtonColor();

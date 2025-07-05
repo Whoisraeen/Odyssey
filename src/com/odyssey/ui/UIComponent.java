@@ -1,6 +1,6 @@
 package com.odyssey.ui;
 
-import com.odyssey.ui.layout.LayoutParams;
+import com.odyssey.ui.layout.LayoutManager;
 import com.odyssey.ui.layout.MeasureSpec;
 import com.odyssey.ui.animation.Animator;
 
@@ -17,9 +17,10 @@ public abstract class UIComponent {
     protected float x, y;
     protected float width, height;
     protected float measuredWidth, measuredHeight;
+    protected float minWidth = 0.0f, minHeight = 0.0f;
     
     // Layout
-    protected LayoutParams layoutParams;
+    protected LayoutManager.LayoutParams layoutParams;
     protected UIComponent parent;
     protected List<UIComponent> children = new ArrayList<>();
     
@@ -31,12 +32,15 @@ public abstract class UIComponent {
     protected boolean hovered = false;
     protected boolean pressed = false;
     protected boolean floating = false;
+    protected boolean clickable = false;
     
     // Styling
     protected float alpha = 1.0f;
     protected int backgroundColor = 0x00000000; // Transparent by default
     protected float cornerRadius = 0.0f;
     protected float elevation = 0.0f;
+    protected float scaleX = 1.0f;
+    protected float scaleY = 1.0f;
     
     // Animation
     protected List<Animator> animators = new ArrayList<>();
@@ -51,11 +55,11 @@ public abstract class UIComponent {
     protected OnFocusChangeListener onFocusChangeListener;
     
     public UIComponent() {
-        this.layoutParams = new LayoutParams();
+        this.layoutParams = new LayoutManager.LayoutParams();
     }
     
     public UIComponent(float x, float y, float width, float height) {
-        this.layoutParams = new LayoutParams();
+        this.layoutParams = new LayoutManager.LayoutParams();
         this.x = x;
         this.y = y;
         this.width = width;
@@ -202,6 +206,14 @@ public abstract class UIComponent {
                pointY >= y && pointY <= y + height;
     }
     
+    public boolean contains(int x, int y) {
+        return isPointInside(x, y);
+    }
+    
+    public boolean contains(float x, float y) {
+        return isPointInside(x, y);
+    }
+    
     // Child management
     public void addChild(UIComponent child) {
         if (child.parent != null) {
@@ -259,14 +271,29 @@ public abstract class UIComponent {
     public float getMeasuredWidth() { return measuredWidth; }
     public float getMeasuredHeight() { return measuredHeight; }
     
+    public void setMeasuredDimension(int measuredWidth, int measuredHeight) {
+        this.measuredWidth = measuredWidth;
+        this.measuredHeight = measuredHeight;
+    }
+    
     // Position methods for layout
     public float getLeft() { return x; }
     public float getTop() { return y; }
     public float getRight() { return x + width; }
     public float getBottom() { return y + height; }
     
-    public float getMinWidth() { return 0.0f; }
-    public float getMinHeight() { return 0.0f; }
+    public float getMinWidth() { return minWidth; }
+    public float getMinHeight() { return minHeight; }
+    
+    public void setMinWidth(float minWidth) {
+        this.minWidth = minWidth;
+        requestLayout();
+    }
+    
+    public void setMinHeight(float minHeight) {
+        this.minHeight = minHeight;
+        requestLayout();
+    }
     
     public void setPosition(float x, float y) {
         this.x = x;
@@ -319,6 +346,9 @@ public abstract class UIComponent {
     public boolean isFloating() { return floating; }
     public void setFloating(boolean floating) { this.floating = floating; }
     
+    public boolean isClickable() { return clickable; }
+    public void setClickable(boolean clickable) { this.clickable = clickable; }
+    
     public float getAlpha() { return alpha; }
     public void setAlpha(float alpha) {
         this.alpha = Math.max(0.0f, Math.min(1.0f, alpha));
@@ -340,6 +370,20 @@ public abstract class UIComponent {
     public float getElevation() { return elevation; }
     public void setElevation(float elevation) {
         this.elevation = elevation;
+        invalidate();
+    }
+    
+    public float getScaleX() { return scaleX; }
+    public float getScaleY() { return scaleY; }
+    public void setScale(float scale) {
+        this.scaleX = scale;
+        this.scaleY = scale;
+        invalidate();
+    }
+    
+    public void setScale(float scaleX, float scaleY) {
+        this.scaleX = scaleX;
+        this.scaleY = scaleY;
         invalidate();
     }
     
@@ -388,8 +432,8 @@ public abstract class UIComponent {
     }
     
     // Layout params
-    public LayoutParams getLayoutParams() { return layoutParams; }
-    public void setLayoutParams(LayoutParams layoutParams) {
+    public LayoutManager.LayoutParams getLayoutParams() { return layoutParams; }
+    public void setLayoutParams(LayoutManager.LayoutParams layoutParams) {
         this.layoutParams = layoutParams;
         requestLayout();
     }

@@ -160,8 +160,8 @@ public class RelativeLayout extends LayoutManager {
         List<UIComponent> children = getVisibleChildren();
         if (children.isEmpty()) {
             parent.setMeasuredDimension(
-                resolveSize(parent.getPaddingLeft() + parent.getPaddingRight(), widthMeasureSpec),
-                resolveSize(parent.getPaddingTop() + parent.getPaddingBottom(), heightMeasureSpec)
+                resolveSize((int)parent.getPaddingLeft() + (int)parent.getPaddingRight(), widthMeasureSpec),
+                resolveSize((int)parent.getPaddingTop() + (int)parent.getPaddingBottom(), heightMeasureSpec)
             );
             return;
         }
@@ -192,15 +192,15 @@ public class RelativeLayout extends LayoutManager {
             UIComponent child = node.component;
             RelativeLayoutParams rlp = node.params;
             
-            int childRight = child.getMeasuredWidth() + rlp.getTotalMarginHorizontal();
-            int childBottom = child.getMeasuredHeight() + rlp.getTotalMarginVertical();
+            int childRight = (int)child.getMeasuredWidth() + rlp.getTotalMarginHorizontal();
+            int childBottom = (int)child.getMeasuredHeight() + rlp.getTotalMarginVertical();
             
             maxWidth = Math.max(maxWidth, childRight);
             maxHeight = Math.max(maxHeight, childBottom);
         }
         
-        maxWidth += parent.getPaddingLeft() + parent.getPaddingRight();
-        maxHeight += parent.getPaddingTop() + parent.getPaddingBottom();
+        maxWidth += (int)parent.getPaddingLeft() + (int)parent.getPaddingRight();
+        maxHeight += (int)parent.getPaddingTop() + (int)parent.getPaddingBottom();
         
         parent.setMeasuredDimension(
             resolveSize(maxWidth, widthMeasureSpec),
@@ -213,10 +213,10 @@ public class RelativeLayout extends LayoutManager {
         List<UIComponent> children = getVisibleChildren();
         if (children.isEmpty()) return;
         
-        int paddingLeft = parent.getPaddingLeft();
-        int paddingTop = parent.getPaddingTop();
-        int paddingRight = parent.getPaddingRight();
-        int paddingBottom = parent.getPaddingBottom();
+        int paddingLeft = (int)parent.getPaddingLeft();
+        int paddingTop = (int)parent.getPaddingTop();
+        int paddingRight = (int)parent.getPaddingRight();
+        int paddingBottom = (int)parent.getPaddingBottom();
         
         int parentWidth = right - left;
         int parentHeight = bottom - top;
@@ -251,8 +251,8 @@ public class RelativeLayout extends LayoutManager {
         UIComponent child = node.component;
         RelativeLayoutParams rlp = node.params;
         
-        int childWidth = child.getMeasuredWidth();
-        int childHeight = child.getMeasuredHeight();
+        int childWidth = (int)child.getMeasuredWidth();
+        int childHeight = (int)child.getMeasuredHeight();
         
         // Default position (top-left)
         int childLeft = paddingLeft + rlp.marginLeft;
@@ -277,13 +277,13 @@ public class RelativeLayout extends LayoutManager {
         if (rlp.leftOf != null) {
             LayoutNode targetNode = nodeMap.get(rlp.leftOf);
             if (targetNode != null && targetNode.positioned) {
-                childRight = targetNode.component.getLeft() - rlp.marginRight;
+                childRight = (int)targetNode.component.getLeft() - rlp.marginRight;
                 childLeft = childRight - childWidth;
             }
         } else if (rlp.rightOf != null) {
             LayoutNode targetNode = nodeMap.get(rlp.rightOf);
             if (targetNode != null && targetNode.positioned) {
-                childLeft = targetNode.component.getRight() + rlp.marginLeft;
+                childLeft = (int)targetNode.component.getRight() + rlp.marginLeft;
                 childRight = childLeft + childWidth;
             }
         }
@@ -292,13 +292,13 @@ public class RelativeLayout extends LayoutManager {
         if (rlp.alignLeft != null) {
             LayoutNode targetNode = nodeMap.get(rlp.alignLeft);
             if (targetNode != null && targetNode.positioned) {
-                childLeft = targetNode.component.getLeft() + rlp.marginLeft;
+                childLeft = (int)targetNode.component.getLeft() + rlp.marginLeft;
                 childRight = childLeft + childWidth;
             }
         } else if (rlp.alignRight != null) {
             LayoutNode targetNode = nodeMap.get(rlp.alignRight);
             if (targetNode != null && targetNode.positioned) {
-                childRight = targetNode.component.getRight() - rlp.marginRight;
+                childRight = (int)targetNode.component.getRight() - rlp.marginRight;
                 childLeft = childRight - childWidth;
             }
         }
@@ -320,13 +320,13 @@ public class RelativeLayout extends LayoutManager {
         if (rlp.above != null) {
             LayoutNode targetNode = nodeMap.get(rlp.above);
             if (targetNode != null && targetNode.positioned) {
-                childBottom = targetNode.component.getTop() - rlp.marginBottom;
+                childBottom = (int)targetNode.component.getTop() - rlp.marginBottom;
                 childTop = childBottom - childHeight;
             }
         } else if (rlp.below != null) {
             LayoutNode targetNode = nodeMap.get(rlp.below);
             if (targetNode != null && targetNode.positioned) {
-                childTop = targetNode.component.getBottom() + rlp.marginTop;
+                childTop = (int)targetNode.component.getBottom() + rlp.marginTop;
                 childBottom = childTop + childHeight;
             }
         }
@@ -335,13 +335,13 @@ public class RelativeLayout extends LayoutManager {
         if (rlp.alignTop != null) {
             LayoutNode targetNode = nodeMap.get(rlp.alignTop);
             if (targetNode != null && targetNode.positioned) {
-                childTop = targetNode.component.getTop() + rlp.marginTop;
+                childTop = (int)targetNode.component.getTop() + rlp.marginTop;
                 childBottom = childTop + childHeight;
             }
         } else if (rlp.alignBottom != null) {
             LayoutNode targetNode = nodeMap.get(rlp.alignBottom);
             if (targetNode != null && targetNode.positioned) {
-                childBottom = targetNode.component.getBottom() - rlp.marginBottom;
+                childBottom = (int)targetNode.component.getBottom() - rlp.marginBottom;
                 childTop = childBottom - childHeight;
             }
         } else if (rlp.alignBaseline != null) {
@@ -349,7 +349,7 @@ public class RelativeLayout extends LayoutManager {
             if (targetNode != null && targetNode.positioned) {
                 // For simplicity, align to the same top position
                 // In a real implementation, you'd calculate baseline positions
-                childTop = targetNode.component.getTop() + rlp.marginTop;
+                childTop = (int)targetNode.component.getTop() + rlp.marginTop;
                 childBottom = childTop + childHeight;
             }
         }

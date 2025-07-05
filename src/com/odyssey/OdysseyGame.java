@@ -160,7 +160,7 @@ public class OdysseyGame implements Runnable {
             this.height = h;
             glViewport(0, 0, w, h);
             if (voxelEngine != null) {
-                voxelEngine.getCamera().setProjection(w, h);
+                voxelEngine.getCamera().setAspectRatio((float) w / h);
             }
         });
 
@@ -305,7 +305,7 @@ public class OdysseyGame implements Runnable {
     }
 
     private void handleInput(float deltaTime) {
-        camera.handleMouseInput(window);
+        // Mouse input is handled by InputManager and VoxelEngine
 
         Player player = voxelEngine.getPlayer();
         

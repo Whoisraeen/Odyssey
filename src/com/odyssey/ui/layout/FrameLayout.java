@@ -207,8 +207,8 @@ public class FrameLayout extends LayoutManager {
                                 parent.getPaddingTop() + parent.getPaddingBottom());
         }
         
-        parent.setMinWidth(minWidth);
-        parent.setMinHeight(minHeight);
+        parent.setMinWidth((float)minWidth);
+        parent.setMinHeight((float)minHeight);
     }
     
     /**
