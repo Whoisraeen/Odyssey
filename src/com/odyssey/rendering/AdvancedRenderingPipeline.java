@@ -10,7 +10,16 @@ import org.lwjgl.opengl.GL20;
 import static org.lwjgl.opengl.GL45.*;
 import com.odyssey.rendering.lighting.VolumetricLighting;
 import com.odyssey.rendering.lighting.ShadowMapping;
+import com.odyssey.rendering.clouds.CloudRenderer;
+import com.odyssey.core.VoxelEngine;
+import com.odyssey.environment.EnvironmentManager;
+import com.odyssey.core.Matrix4f;
 
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.glUseProgram;
+import static org.lwjgl.opengl.GL20.glGetUniformLocation;
+import static org.lwjgl.opengl.GL20.glUniform1i;
+import static org.lwjgl.opengl.GL20.glUniform1f;
 
 /**
  * Advanced Modern Rendering Pipeline
@@ -29,6 +38,7 @@ public class AdvancedRenderingPipeline {
     private final VolumetricLighting volumetricLighting;
     private final SSAORenderer ssaoRenderer;
     private final ShadowMapping shadowMapping;
+    private final CloudRenderer cloudRenderer;
     
     // Shader programs
     private final ShaderManager shaderManager;
@@ -40,9 +50,12 @@ public class AdvancedRenderingPipeline {
     // Performance tracking
     private final PerformanceProfiler profiler;
     
-    public AdvancedRenderingPipeline(int width, int height) {
+    private final EnvironmentManager environmentManager;
+
+    public AdvancedRenderingPipeline(int width, int height, EnvironmentManager environmentManager) {
         this.screenWidth = width;
         this.screenHeight = height;
+        this.environmentManager = environmentManager;
         
         // Initialize systems
         this.gBuffer = new GBuffer(width, height);
@@ -51,6 +64,7 @@ public class AdvancedRenderingPipeline {
         this.volumetricLighting = new VolumetricLighting(width, height);
         this.ssaoRenderer = new SSAORenderer(width, height);
         this.shadowMapping = new ShadowMapping(2048, 2048); // High-res shadow maps
+        this.cloudRenderer = new CloudRenderer(width, height);
         this.shaderManager = new ShaderManager();
         this.uniformBuffers = new UniformBufferManager();
         this.profiler = new PerformanceProfiler();
@@ -72,7 +86,7 @@ public class AdvancedRenderingPipeline {
     /**
      * Main render function - implements full deferred rendering pipeline
      */
-    public void render(Camera camera, Scene scene, float deltaTime) {
+    public void render(Camera camera, Scene scene, float deltaTime, float time, float cloudCoverage, float cloudDensity, float lightningFlash) {
         profiler.startFrame();
         
         // Update uniform buffers
@@ -101,7 +115,7 @@ public class AdvancedRenderingPipeline {
         
         // 5. Volumetric lighting pass
         profiler.startSection("Volumetric Lighting");
-        volumetricLighting.render(camera, scene.getLights(), shadowMapping);
+        volumetricLighting.render(camera, scene.getLights(), gBuffer.getDepthTexture(), shadowMapping.getShadowMapTexture());
         profiler.endSection();
         
         // 6. Forward rendering pass (transparent objects)
@@ -109,11 +123,18 @@ public class AdvancedRenderingPipeline {
         renderForward(camera, scene);
         profiler.endSection();
         
-        // 7. Post-processing pipeline
+        // 7. Cloud Pass
+        profiler.startSection("Clouds");
+        cloudRenderer.render(camera, time, cloudCoverage, cloudDensity);
+        profiler.endSection();
+        
+        // 8. Post-processing pipeline
         profiler.startSection("Post-Processing");
-        postProcessing.render(lightingSystem.getColorTexture(), 
+        postProcessing.render(lightingSystem.getLitTexture(), 
                             volumetricLighting.getVolumetricTexture(),
-                            gBuffer.getDepthTexture());
+                            cloudRenderer.getCloudTexture(),
+                            gBuffer.getDepthTexture(),
+                            lightningFlash);
         profiler.endSection();
         
         profiler.endFrame();
@@ -139,6 +160,10 @@ public class AdvancedRenderingPipeline {
         uniformBuffers.bindCameraUniforms(camera);
         uniformBuffers.bindMaterialUniforms();
         
+        // Pass season uniforms to the geometry shader
+        glUniform1i(glGetUniformLocation(shaderProgram, "u_season"), environmentManager.getCurrentSeasonId());
+        glUniform1f(glGetUniformLocation(shaderProgram, "u_seasonTransition"), environmentManager.getSeasonTransition());
+        
         // Render all opaque objects
         for (RenderObject obj : scene.getOpaqueObjects()) {
             renderObject(obj, shaderProgram);
@@ -157,6 +182,10 @@ public class AdvancedRenderingPipeline {
         
         // Bind lighting textures
         lightingSystem.bindLightingTextures();
+        
+        // Pass season uniforms to the forward shader
+        glUniform1i(glGetUniformLocation(shaderProgram, "u_season"), environmentManager.getCurrentSeasonId());
+        glUniform1f(glGetUniformLocation(shaderProgram, "u_seasonTransition"), environmentManager.getSeasonTransition());
         
         // Render transparent objects
         for (RenderObject obj : scene.getTransparentObjects()) {
@@ -195,6 +224,9 @@ public class AdvancedRenderingPipeline {
             "shaders/ssao.vert", "shaders/ssao.frag"));
         shaderPrograms.put("shadow", shaderManager.loadProgram(
             "shaders/shadow.vert", "shaders/shadow.frag"));
+            
+        // Pass the deferred lighting shader to the lighting system
+        lightingSystem.setDeferredLightingShader(shaderPrograms.get("deferred_lighting"));
     }
     
     private void initializeUniforms() {
@@ -212,8 +244,21 @@ public class AdvancedRenderingPipeline {
         postProcessing.resize(width, height);
         volumetricLighting.resize(width, height);
         ssaoRenderer.resize(width, height);
+        shadowMapping.resize(width, height);
+        cloudRenderer.resize(width, height);
         
         glViewport(0, 0, width, height);
+    }
+    
+    private void renderSceneGeometry() {
+        // Placeholder for rendering opaque geometry to G-Buffer
+        // This will be implemented when we integrate with the voxel system
+        // For now, just ensure the G-Buffer has valid data
+    }
+    
+    private void renderTransparentObjects() {
+        // Placeholder for forward rendering of transparent objects
+        // This includes water, glass, particles, etc.
     }
     
     public void cleanup() {
@@ -223,6 +268,7 @@ public class AdvancedRenderingPipeline {
         volumetricLighting.cleanup();
         ssaoRenderer.cleanup();
         shadowMapping.cleanup();
+        cloudRenderer.cleanup();
         shaderManager.cleanup();
         uniformBuffers.cleanup();
         
@@ -230,4 +276,10 @@ public class AdvancedRenderingPipeline {
         shaderPrograms.values().forEach(GL20::glDeleteProgram);
         shaderPrograms.clear();
     }
-} 
+    
+    public void setWetness(float wetness) {
+        int shaderProgram = shaderPrograms.get("geometry");
+        glUseProgram(shaderProgram);
+        GL20.glUniform1f(GL20.glGetUniformLocation(shaderProgram, "u_wetness"), wetness);
+    }
+}

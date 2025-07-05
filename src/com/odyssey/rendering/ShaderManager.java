@@ -2,7 +2,11 @@ package com.odyssey.rendering;
 
 import com.odyssey.utils.FileUtils;
 import org.lwjgl.opengl.GL20;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.lwjgl.system.MemoryStack;
 
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,9 +64,33 @@ public class ShaderManager {
         return shader;
     }
 
+    public static void setUniform(int program, String name, Matrix4f matrix) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            FloatBuffer buffer = stack.mallocFloat(16);
+            matrix.get(buffer);
+            int location = glGetUniformLocation(program, name);
+            glUniformMatrix4fv(location, false, buffer);
+        }
+    }
+    
+    public static void setUniform(int program, String name, Vector3f vector) {
+        int location = glGetUniformLocation(program, name);
+        glUniform3f(location, vector.x, vector.y, vector.z);
+    }
+    
+    public static void setUniform(int program, String name, float value) {
+        int location = glGetUniformLocation(program, name);
+        glUniform1f(location, value);
+    }
+    
+    public static void setUniform(int program, String name, int value) {
+        int location = glGetUniformLocation(program, name);
+        glUniform1i(location, value);
+    }
+
     public void cleanup() {
         for (int program : programs) {
             glDeleteProgram(program);
         }
     }
-} 
+}

@@ -1,6 +1,8 @@
 package com.odyssey.world;
 
 import com.odyssey.rendering.mesh.ChunkMesh;
+import com.odyssey.world.biome.Biome;
+import org.joml.Vector3i;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -26,8 +28,17 @@ public class Chunk {
     private int ebo = 0;
     private int vertexCount = 0;
     
+    private int transparentVao;
+    private int transparentVbo;
+    private int transparentVertexCount;
+    
     // Mesh data
     private volatile ChunkMesh mesh;
+    
+    private final BlockType[] blocks = new BlockType[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE];
+    private final Biome[] biomes = new Biome[CHUNK_SIZE * CHUNK_SIZE];
+    private ChunkMesh[] meshes;
+    private boolean needsRemeshing = true;
     
     public Chunk(ChunkPosition position) {
         this.position = position;
@@ -63,74 +74,77 @@ public class Chunk {
     public void setMesh(ChunkMesh mesh) {
         this.mesh = mesh;
         meshDirty.set(false);
-        
-        // Upload to GPU
-        uploadMeshToGPU();
     }
     
-    private void uploadMeshToGPU() {
-        if (mesh == null || mesh.getIndexCount() == 0) return;
+    public void uploadMeshToGPU(ChunkMesh opaqueMesh, ChunkMesh transparentMesh) {
+        cleanup(); // Clean up old mesh data first
 
-        FloatBuffer vertexBuffer = null;
-        IntBuffer indexBuffer = null;
-        try {
-            // Allocate native memory, fill it, and flip it for reading
-            vertexBuffer = MemoryUtil.memAllocFloat(mesh.getVertices().length);
-            vertexBuffer.put(mesh.getVertices()).flip();
-
-            indexBuffer = MemoryUtil.memAllocInt(mesh.getIndices().length);
-            indexBuffer.put(mesh.getIndices()).flip();
-
-            // Generate OpenGL objects if this is the first time
-            if (vao == 0) {
-                vao = glGenVertexArrays();
-                vbo = glGenBuffers();
-                ebo = glGenBuffers();
-            }
-
-            glBindVertexArray(vao);
-
-            // Upload vertex data to VBO
-            glBindBuffer(GL_ARRAY_BUFFER, vbo);
-            glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
-
-            // Upload index data to EBO
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBuffer, GL_STATIC_DRAW);
-
-            // Set vertex attributes pointers
-            // Position (vec3)
-            glVertexAttribPointer(0, 3, GL_FLOAT, false, 8 * Float.BYTES, 0L);
+        // Upload opaque mesh
+        if (opaqueMesh.getVertices().length > 0) {
+            this.vao = glGenVertexArrays();
+            this.vbo = glGenBuffers();
+            glBindVertexArray(this.vao);
+            glBindBuffer(GL_ARRAY_BUFFER, this.vbo);
+            glBufferData(GL_ARRAY_BUFFER, opaqueMesh.getVertices(), GL_STATIC_DRAW);
+            
+            // Vertex format: position (3), normal (3), texture coords (2) = 8 floats per vertex
+            int stride = 8 * Float.BYTES;
+            
+            // Position attribute (location 0)
+            glVertexAttribPointer(0, 3, GL_FLOAT, false, stride, 0);
             glEnableVertexAttribArray(0);
-
-            // Normal (vec3)
-            glVertexAttribPointer(1, 3, GL_FLOAT, false, 8 * Float.BYTES, 3 * Float.BYTES);
+            
+            // Normal attribute (location 1)
+            glVertexAttribPointer(1, 3, GL_FLOAT, false, stride, 3 * Float.BYTES);
             glEnableVertexAttribArray(1);
-
-            // UV (vec2)
-            glVertexAttribPointer(2, 2, GL_FLOAT, false, 8 * Float.BYTES, 6 * Float.BYTES);
+            
+            // Texture coordinate attribute (location 2)
+            glVertexAttribPointer(2, 2, GL_FLOAT, false, stride, 6 * Float.BYTES);
             glEnableVertexAttribArray(2);
-
-            vertexCount = mesh.getIndexCount();
-
-            glBindVertexArray(0);
-
-        } finally {
-            // Free the native memory now that it's on the GPU
-            if (vertexBuffer != null) {
-                MemoryUtil.memFree(vertexBuffer);
-            }
-            if (indexBuffer != null) {
-                MemoryUtil.memFree(indexBuffer);
-            }
+            
+            this.vertexCount = opaqueMesh.getVertices().length / 8;
         }
+
+        // Upload transparent mesh
+        if (transparentMesh.getVertices().length > 0) {
+            this.transparentVao = glGenVertexArrays();
+            this.transparentVbo = glGenBuffers();
+            glBindVertexArray(this.transparentVao);
+            glBindBuffer(GL_ARRAY_BUFFER, this.transparentVbo);
+            glBufferData(GL_ARRAY_BUFFER, transparentMesh.getVertices(), GL_STATIC_DRAW);
+            
+            // Vertex format: position (3), normal (3), texture coords (2) = 8 floats per vertex
+            int stride = 8 * Float.BYTES;
+            
+            // Position attribute (location 0)
+            glVertexAttribPointer(0, 3, GL_FLOAT, false, stride, 0);
+            glEnableVertexAttribArray(0);
+            
+            // Normal attribute (location 1)
+            glVertexAttribPointer(1, 3, GL_FLOAT, false, stride, 3 * Float.BYTES);
+            glEnableVertexAttribArray(1);
+            
+            // Texture coordinate attribute (location 2)
+            glVertexAttribPointer(2, 2, GL_FLOAT, false, stride, 6 * Float.BYTES);
+            glEnableVertexAttribArray(2);
+            
+            this.transparentVertexCount = transparentMesh.getVertices().length / 8;
+        }
+
+        glBindVertexArray(0);
     }
     
     public void render() {
-        if (vao != 0 && vertexCount > 0) {
+        if (vao != 0) {
             glBindVertexArray(vao);
-            glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, 0);
-            glBindVertexArray(0);
+            glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+        }
+    }
+    
+    public void renderTransparent() {
+        if (transparentVao != 0) {
+            glBindVertexArray(transparentVao);
+            glDrawArrays(GL_TRIANGLES, 0, transparentVertexCount);
         }
     }
     
@@ -138,11 +152,49 @@ public class Chunk {
         if (vao != 0) {
             glDeleteVertexArrays(vao);
             glDeleteBuffers(vbo);
-            glDeleteBuffers(ebo);
-            vao = vbo = ebo = 0;
+            vao = 0;
+            vbo = 0;
+            vertexCount = 0;
+        }
+        if (transparentVao != 0) {
+            glDeleteVertexArrays(transparentVao);
+            glDeleteBuffers(transparentVbo);
+            transparentVao = 0;
+            transparentVbo = 0;
+            transparentVertexCount = 0;
         }
     }
     
     public int getVao() { return vao; }
+    public int getTransparentVao() { return transparentVao; }
+    public int getVertexCount() { return vertexCount; }
+    public int getTransparentVertexCount() { return transparentVertexCount; }
     public ChunkPosition getPosition() { return position; }
-} 
+
+    /**
+     * Gets a block within this chunk using local coordinates.
+     * Returns AIR if coordinates are out of bounds.
+     */
+    public BlockType getBlockInChunk(int x, int y, int z) {
+        if (x < 0 || x >= CHUNK_SIZE ||
+            y < 0 || y >= CHUNK_HEIGHT ||
+            z < 0 || z >= CHUNK_SIZE) {
+            return BlockType.AIR;
+        }
+        return getBlock(x, y, z);
+    }
+
+    public void setBiome(int x, int z, Biome biome) {
+        if (x < 0 || x >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
+            return; // Out of bounds
+        }
+        biomes[x + z * CHUNK_SIZE] = biome;
+    }
+
+    public Biome getBiome(int x, int z) {
+        if (x < 0 || x >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
+            return Biome.OCEAN; // Default to ocean for safety
+        }
+        return biomes[x + z * CHUNK_SIZE];
+    }
+}

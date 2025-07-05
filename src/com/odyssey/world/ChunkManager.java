@@ -56,7 +56,9 @@ public class ChunkManager {
                     if (!loadedChunks.containsKey(pos) && !loadingChunks.containsKey(pos)) {
                         // Start loading chunk asynchronously
                         Future<Chunk> future = chunkLoadingPool.submit(() -> {
-                            return worldGenerator.generateChunk(pos);
+                            Chunk chunk = new Chunk(pos);
+                            worldGenerator.generateChunk(chunk);
+                            return chunk;
                         });
                         loadingChunks.put(pos, future);
                     }
@@ -112,4 +114,4 @@ public class ChunkManager {
         loadingChunks.values().forEach(future -> future.cancel(true));
         loadingChunks.clear();
     }
-} 
+}

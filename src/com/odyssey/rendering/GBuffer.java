@@ -79,6 +79,22 @@ public class GBuffer {
     public int getDepthTexture() {
         return depthTexture;
     }
+    
+    public int getPositionTexture() {
+        return colorTextures[0];
+    }
+    
+    public int getNormalTexture() {
+        return colorTextures[1];
+    }
+    
+    public int getAlbedoTexture() {
+        return colorTextures[2];
+    }
+    
+    public int getMaterialTexture() {
+        return colorTextures[3];
+    }
 
     public void copyDepthToDefaultFramebuffer(int screenWidth, int screenHeight) {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
@@ -100,9 +116,8 @@ public class GBuffer {
             case 1: // Normal
                 return GL_RGB;
             case 2: // Albedo
-                return GL_RGBA;
             case 3: // Material
-                return GL_RGB;
+                return GL_RGBA;
             default:
                 throw new IllegalArgumentException("Invalid G-Buffer texture index");
         }
@@ -115,10 +130,10 @@ public class GBuffer {
                 return GL_RGB16F;
             case 2: // Albedo (standard)
                 return GL_RGBA8;
-            case 3: // Material (metallic, roughness, ao)
-                return GL_RGB16F;
+            case 3: // Material (metallic, roughness, ao, extra)
+                return GL_RGBA16F;
             default:
                 throw new IllegalArgumentException("Invalid G-Buffer texture index");
         }
     }
-} 
+}

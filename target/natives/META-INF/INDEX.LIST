@@ -1,6 +1,6 @@
 JarIndex-Version: 1.0
 
-lwjgl-opengl-natives-windows.jar
+lwjgl-openal-natives-windows.jar
 META-INF
 META-INF/versions
 META-INF/versions/9
@@ -8,10 +8,10 @@ META-INF/windows
 META-INF/windows/x64
 META-INF/windows/x64/org
 META-INF/windows/x64/org/lwjgl
-META-INF/windows/x64/org/lwjgl/opengl
+META-INF/windows/x64/org/lwjgl/openal
 windows
 windows/x64
 windows/x64/org
 windows/x64/org/lwjgl
-windows/x64/org/lwjgl/opengl
+windows/x64/org/lwjgl/openal
 

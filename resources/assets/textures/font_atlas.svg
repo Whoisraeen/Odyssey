@@ -1,0 +1,125 @@
+<svg width="256" height="96" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .char {
+        font-family: monospace;
+        font-size: 12px;
+        fill: white;
+        text-anchor: middle;
+        dominant-baseline: central;
+      }
+    </style>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="256" height="96" fill="black"/>
+  
+  <!-- ASCII characters 32-126 in 16x6 grid -->
+  <!-- Row 0: Space (32) to / (47) -->
+  <text x="8" y="8" class="char"> </text>
+  <text x="24" y="8" class="char">!</text>
+  <text x="40" y="8" class="char">"</text>
+  <text x="56" y="8" class="char">#</text>
+  <text x="72" y="8" class="char">$</text>
+  <text x="88" y="8" class="char">%</text>
+  <text x="104" y="8" class="char">&amp;</text>
+  <text x="120" y="8" class="char">'</text>
+  <text x="136" y="8" class="char">(</text>
+  <text x="152" y="8" class="char">)</text>
+  <text x="168" y="8" class="char">*</text>
+  <text x="184" y="8" class="char">+</text>
+  <text x="200" y="8" class="char">,</text>
+  <text x="216" y="8" class="char">-</text>
+  <text x="232" y="8" class="char">.</text>
+  <text x="248" y="8" class="char">/</text>
+  
+  <!-- Row 1: 0 (48) to ? (63) -->
+  <text x="8" y="24" class="char">0</text>
+  <text x="24" y="24" class="char">1</text>
+  <text x="40" y="24" class="char">2</text>
+  <text x="56" y="24" class="char">3</text>
+  <text x="72" y="24" class="char">4</text>
+  <text x="88" y="24" class="char">5</text>
+  <text x="104" y="24" class="char">6</text>
+  <text x="120" y="24" class="char">7</text>
+  <text x="136" y="24" class="char">8</text>
+  <text x="152" y="24" class="char">9</text>
+  <text x="168" y="24" class="char">:</text>
+  <text x="184" y="24" class="char">;</text>
+  <text x="200" y="24" class="char">&lt;</text>
+  <text x="216" y="24" class="char">=</text>
+  <text x="232" y="24" class="char">&gt;</text>
+  <text x="248" y="24" class="char">?</text>
+  
+  <!-- Row 2: @ (64) to O (79) -->
+  <text x="8" y="40" class="char">@</text>
+  <text x="24" y="40" class="char">A</text>
+  <text x="40" y="40" class="char">B</text>
+  <text x="56" y="40" class="char">C</text>
+  <text x="72" y="40" class="char">D</text>
+  <text x="88" y="40" class="char">E</text>
+  <text x="104" y="40" class="char">F</text>
+  <text x="120" y="40" class="char">G</text>
+  <text x="136" y="40" class="char">H</text>
+  <text x="152" y="40" class="char">I</text>
+  <text x="168" y="40" class="char">J</text>
+  <text x="184" y="40" class="char">K</text>
+  <text x="200" y="40" class="char">L</text>
+  <text x="216" y="40" class="char">M</text>
+  <text x="232" y="40" class="char">N</text>
+  <text x="248" y="40" class="char">O</text>
+  
+  <!-- Row 3: P (80) to _ (95) -->
+  <text x="8" y="56" class="char">P</text>
+  <text x="24" y="56" class="char">Q</text>
+  <text x="40" y="56" class="char">R</text>
+  <text x="56" y="56" class="char">S</text>
+  <text x="72" y="56" class="char">T</text>
+  <text x="88" y="56" class="char">U</text>
+  <text x="104" y="56" class="char">V</text>
+  <text x="120" y="56" class="char">W</text>
+  <text x="136" y="56" class="char">X</text>
+  <text x="152" y="56" class="char">Y</text>
+  <text x="168" y="56" class="char">Z</text>
+  <text x="184" y="56" class="char">[</text>
+  <text x="200" y="56" class="char">\</text>
+  <text x="216" y="56" class="char">]</text>
+  <text x="232" y="56" class="char">^</text>
+  <text x="248" y="56" class="char">_</text>
+  
+  <!-- Row 4: ` (96) to o (111) -->
+  <text x="8" y="72" class="char">`</text>
+  <text x="24" y="72" class="char">a</text>
+  <text x="40" y="72" class="char">b</text>
+  <text x="56" y="72" class="char">c</text>
+  <text x="72" y="72" class="char">d</text>
+  <text x="88" y="72" class="char">e</text>
+  <text x="104" y="72" class="char">f</text>
+  <text x="120" y="72" class="char">g</text>
+  <text x="136" y="72" class="char">h</text>
+  <text x="152" y="72" class="char">i</text>
+  <text x="168" y="72" class="char">j</text>
+  <text x="184" y="72" class="char">k</text>
+  <text x="200" y="72" class="char">l</text>
+  <text x="216" y="72" class="char">m</text>
+  <text x="232" y="72" class="char">n</text>
+  <text x="248" y="72" class="char">o</text>
+  
+  <!-- Row 5: p (112) to DEL (127) -->
+  <text x="8" y="88" class="char">p</text>
+  <text x="24" y="88" class="char">q</text>
+  <text x="40" y="88" class="char">r</text>
+  <text x="56" y="88" class="char">s</text>
+  <text x="72" y="88" class="char">t</text>
+  <text x="88" y="88" class="char">u</text>
+  <text x="104" y="88" class="char">v</text>
+  <text x="120" y="88" class="char">w</text>
+  <text x="136" y="88" class="char">x</text>
+  <text x="152" y="88" class="char">y</text>
+  <text x="168" y="88" class="char">z</text>
+  <text x="184" y="88" class="char">{</text>
+  <text x="200" y="88" class="char">|</text>
+  <text x="216" y="88" class="char">}</text>
+  <text x="232" y="88" class="char">~</text>
+  <text x="248" y="88" class="char">■</text> <!-- DEL placeholder -->
+</svg>

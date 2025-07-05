@@ -1,0 +1,394 @@
+package com.odyssey.ui;
+
+import com.odyssey.ui.layout.LayoutParams;
+import com.odyssey.ui.animation.Animator;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Base class for all UI components in the modern UI system
+ * Inspired by Android View system and ModernUI architecture
+ */
+public abstract class UIComponent {
+    
+    // Position and size
+    protected float x, y;
+    protected float width, height;
+    protected float measuredWidth, measuredHeight;
+    
+    // Layout
+    protected LayoutParams layoutParams;
+    protected UIComponent parent;
+    protected List<UIComponent> children = new ArrayList<>();
+    
+    // State
+    protected boolean visible = true;
+    protected boolean enabled = true;
+    protected boolean focusable = false;
+    protected boolean focused = false;
+    protected boolean hovered = false;
+    protected boolean pressed = false;
+    protected boolean floating = false;
+    
+    // Styling
+    protected float alpha = 1.0f;
+    protected int backgroundColor = 0x00000000; // Transparent by default
+    protected float cornerRadius = 0.0f;
+    protected float elevation = 0.0f;
+    
+    // Animation
+    protected List<Animator> animators = new ArrayList<>();
+    
+    // Padding and margin
+    protected float paddingLeft, paddingTop, paddingRight, paddingBottom;
+    protected float marginLeft, marginTop, marginRight, marginBottom;
+    
+    // Event listeners
+    protected OnClickListener onClickListener;
+    protected OnHoverListener onHoverListener;
+    protected OnFocusChangeListener onFocusChangeListener;
+    
+    public UIComponent() {
+        this.layoutParams = new LayoutParams();
+    }
+    
+    // Abstract methods that subclasses must implement
+    public abstract void render(UIRenderer renderer, float deltaTime);
+    
+    /**
+     * Measure the component's desired size
+     * @param widthSpec width constraint
+     * @param heightSpec height constraint
+     */
+    public void measure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+        measuredWidth = MeasureSpec.getSize(widthSpec);
+        measuredHeight = MeasureSpec.getSize(heightSpec);
+        
+        onMeasure(widthSpec, heightSpec);
+    }
+    
+    protected void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+        // Default implementation - subclasses can override
+    }
+    
+    /**
+     * Layout the component and its children
+     * @param left left position
+     * @param top top position
+     * @param right right position
+     * @param bottom bottom position
+     */
+    public void layout(float left, float top, float right, float bottom) {
+        boolean changed = (this.x != left || this.y != top || 
+                          this.width != (right - left) || this.height != (bottom - top));
+        
+        this.x = left;
+        this.y = top;
+        this.width = right - left;
+        this.height = bottom - top;
+        
+        if (changed) {
+            onLayout(changed, left, top, right, bottom);
+        }
+    }
+    
+    protected void onLayout(boolean changed, float left, float top, float right, float bottom) {
+        // Default implementation - subclasses can override
+    }
+    
+    // Input handling
+    public boolean onMouseClick(double mouseX, double mouseY, int button) {
+        if (!isPointInside(mouseX, mouseY) || !enabled || !visible) {
+            return false;
+        }
+        
+        // Check children first (reverse order for proper z-ordering)
+        for (int i = children.size() - 1; i >= 0; i--) {
+            if (children.get(i).onMouseClick(mouseX, mouseY, button)) {
+                return true;
+            }
+        }
+        
+        // Handle click on this component
+        if (button == 0) { // Left click
+            setPressed(true);
+            if (onClickListener != null) {
+                onClickListener.onClick(this);
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    public boolean onMouseMove(double mouseX, double mouseY) {
+        boolean wasHovered = hovered;
+        boolean isInside = isPointInside(mouseX, mouseY) && visible;
+        
+        setHovered(isInside);
+        
+        if (isInside != wasHovered && onHoverListener != null) {
+            onHoverListener.onHoverChange(this, isInside);
+        }
+        
+        // Propagate to children
+        for (UIComponent child : children) {
+            child.onMouseMove(mouseX, mouseY);
+        }
+        
+        return isInside;
+    }
+    
+    public boolean onKeyPress(int key, int scancode, int mods) {
+        if (!focused || !enabled || !visible) {
+            return false;
+        }
+        
+        // Check focused child first
+        for (UIComponent child : children) {
+            if (child.focused && child.onKeyPress(key, scancode, mods)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    public boolean onCharInput(int codepoint) {
+        if (!focused || !enabled || !visible) {
+            return false;
+        }
+        
+        // Check focused child first
+        for (UIComponent child : children) {
+            if (child.focused && child.onCharInput(codepoint)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    public boolean onScroll(double xOffset, double yOffset) {
+        if (!isPointInside(UIManager.getInstance().getInputManager().getMouseX(),
+                UIManager.getInstance().getInputManager().getMouseY()) || 
+            !enabled || !visible) {
+            return false;
+        }
+        
+        // Check children first
+        for (int i = children.size() - 1; i >= 0; i--) {
+            if (children.get(i).onScroll(xOffset, yOffset)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    // Utility methods
+    protected boolean isPointInside(double pointX, double pointY) {
+        return pointX >= x && pointX <= x + width && 
+               pointY >= y && pointY <= y + height;
+    }
+    
+    // Child management
+    public void addChild(UIComponent child) {
+        if (child.parent != null) {
+            child.parent.removeChild(child);
+        }
+        
+        children.add(child);
+        child.parent = this;
+        requestLayout();
+    }
+    
+    public void removeChild(UIComponent child) {
+        if (children.remove(child)) {
+            child.parent = null;
+            requestLayout();
+        }
+    }
+    
+    public void removeAllChildren() {
+        for (UIComponent child : children) {
+            child.parent = null;
+        }
+        children.clear();
+        requestLayout();
+    }
+    
+    // Animation
+    public void startAnimation(Animator animator) {
+        animators.add(animator);
+        animator.setTarget(this);
+        animator.start();
+    }
+    
+    public void clearAnimations() {
+        for (Animator animator : animators) {
+            animator.cancel();
+        }
+        animators.clear();
+    }
+    
+    // Layout request
+    public void requestLayout() {
+        UIManager.getInstance().getLayoutManager().requestLayout();
+    }
+    
+    public void invalidate() {
+        // Mark for redraw - in a real implementation this would be more sophisticated
+    }
+    
+    // Getters and setters
+    public float getX() { return x; }
+    public float getY() { return y; }
+    public float getWidth() { return width; }
+    public float getHeight() { return height; }
+    public float getMeasuredWidth() { return measuredWidth; }
+    public float getMeasuredHeight() { return measuredHeight; }
+    
+    public float getMinWidth() { return 0.0f; }
+    public float getMinHeight() { return 0.0f; }
+    
+    public void setPosition(float x, float y) {
+        this.x = x;
+        this.y = y;
+    }
+    
+    public void setSize(float width, float height) {
+        this.width = width;
+        this.height = height;
+    }
+    
+    public boolean isVisible() { return visible; }
+    public void setVisible(boolean visible) { 
+        this.visible = visible;
+        invalidate();
+    }
+    
+    public boolean isEnabled() { return enabled; }
+    public void setEnabled(boolean enabled) { 
+        this.enabled = enabled;
+        invalidate();
+    }
+    
+    public boolean isFocusable() { return focusable; }
+    public void setFocusable(boolean focusable) { this.focusable = focusable; }
+    
+    public boolean isFocused() { return focused; }
+    public void setFocused(boolean focused) {
+        if (this.focused != focused) {
+            this.focused = focused;
+            if (onFocusChangeListener != null) {
+                onFocusChangeListener.onFocusChange(this, focused);
+            }
+            invalidate();
+        }
+    }
+    
+    public boolean isHovered() { return hovered; }
+    protected void setHovered(boolean hovered) {
+        this.hovered = hovered;
+        invalidate();
+    }
+    
+    public boolean isPressed() { return pressed; }
+    protected void setPressed(boolean pressed) {
+        this.pressed = pressed;
+        invalidate();
+    }
+    
+    public boolean isFloating() { return floating; }
+    public void setFloating(boolean floating) { this.floating = floating; }
+    
+    public float getAlpha() { return alpha; }
+    public void setAlpha(float alpha) {
+        this.alpha = Math.max(0.0f, Math.min(1.0f, alpha));
+        invalidate();
+    }
+    
+    public int getBackgroundColor() { return backgroundColor; }
+    public void setBackgroundColor(int backgroundColor) {
+        this.backgroundColor = backgroundColor;
+        invalidate();
+    }
+    
+    public float getCornerRadius() { return cornerRadius; }
+    public void setCornerRadius(float cornerRadius) {
+        this.cornerRadius = cornerRadius;
+        invalidate();
+    }
+    
+    public float getElevation() { return elevation; }
+    public void setElevation(float elevation) {
+        this.elevation = elevation;
+        invalidate();
+    }
+    
+    // Padding
+    public void setPadding(float padding) {
+        setPadding(padding, padding, padding, padding);
+    }
+    
+    public void setPadding(float left, float top, float right, float bottom) {
+        this.paddingLeft = left;
+        this.paddingTop = top;
+        this.paddingRight = right;
+        this.paddingBottom = bottom;
+        requestLayout();
+    }
+    
+    public float getPaddingLeft() { return paddingLeft; }
+    public float getPaddingTop() { return paddingTop; }
+    public float getPaddingRight() { return paddingRight; }
+    public float getPaddingBottom() { return paddingBottom; }
+    
+    // Margin
+    public void setMargin(float margin) {
+        setMargin(margin, margin, margin, margin);
+    }
+    
+    public void setMargin(float left, float top, float right, float bottom) {
+        this.marginLeft = left;
+        this.marginTop = top;
+        this.marginRight = right;
+        this.marginBottom = bottom;
+        requestLayout();
+    }
+    
+    // Event listeners
+    public void setOnClickListener(OnClickListener listener) {
+        this.onClickListener = listener;
+    }
+    
+    public void setOnHoverListener(OnHoverListener listener) {
+        this.onHoverListener = listener;
+    }
+    
+    public void setOnFocusChangeListener(OnFocusChangeListener listener) {
+        this.onFocusChangeListener = listener;
+    }
+    
+    // Layout params
+    public LayoutParams getLayoutParams() { return layoutParams; }
+    public void setLayoutParams(LayoutParams layoutParams) {
+        this.layoutParams = layoutParams;
+        requestLayout();
+    }
+    
+    // Event listener interfaces
+    public interface OnClickListener {
+        void onClick(UIComponent component);
+    }
+    
+    public interface OnHoverListener {
+        void onHoverChange(UIComponent component, boolean hovered);
+    }
+    
+    public interface OnFocusChangeListener {
+        void onFocusChange(UIComponent component, boolean focused);
+    }
+}
