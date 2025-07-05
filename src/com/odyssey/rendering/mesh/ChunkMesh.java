@@ -1,28 +1,31 @@
 package com.odyssey.rendering.mesh;
 
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-
-import static org.lwjgl.system.MemoryUtil.memAllocFloat;
-import static org.lwjgl.system.MemoryUtil.memAllocInt;
-
+/**
+ * A simple data holder for chunk mesh data, containing vertex and index arrays.
+ * This class does no native memory allocation.
+ */
 public class ChunkMesh {
     private final float[] vertices;
     private final int[] indices;
     
-    public ChunkMesh() {
-        // Placeholder - real implementation would contain optimized mesh data
-        this.vertices = new float[0];
-        this.indices = new int[0];
+    public ChunkMesh(float[] vertices, int[] indices) {
+        this.vertices = vertices;
+        this.indices = indices;
     }
     
-    public FloatBuffer getVertexBuffer() {
-        return memAllocFloat(vertices.length).put(vertices).flip();
+    public float[] getVertices() {
+        return vertices;
     }
     
-    public IntBuffer getIndexBuffer() {
-        return memAllocInt(indices.length).put(indices).flip();
+    public int[] getIndices() {
+        return indices;
     }
     
-    public int getIndexCount() { return indices.length; }
+    public int getVertexCount() {
+        return vertices.length;
+    }
+
+    public int getIndexCount() {
+        return indices.length;
+    }
 } 

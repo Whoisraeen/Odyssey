@@ -1,5 +1,6 @@
 package com.odyssey;
 
+import com.odyssey.core.VoxelEngine;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
@@ -14,8 +15,11 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 public class OdysseyGame implements Runnable {
     private long window;
-    private final int width = 1280;
-    private final int height = 720;
+    private int width = 1280;
+    private int height = 720;
+
+    private VoxelEngine voxelEngine;
+    private double lastFrameTime;
 
     public static void main(String[] args) {
         new OdysseyGame().run();
@@ -57,6 +61,10 @@ public class OdysseyGame implements Runnable {
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
                 glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
             }
+            // Pass input to camera
+            if (voxelEngine != null) {
+                voxelEngine.getCamera().handleInput(key, action);
+            }
         });
 
         // Get the thread stack and push a new frame
@@ -78,6 +86,15 @@ public class OdysseyGame implements Runnable {
             );
         } // the stack frame is popped automatically
 
+        glfwSetFramebufferSizeCallback(window, (win, w, h) -> {
+            this.width = w;
+            this.height = h;
+            glViewport(0, 0, w, h);
+            if (voxelEngine != null) {
+                voxelEngine.getCamera().setProjection(w, h);
+            }
+        });
+
         // Make the OpenGL context current
         glfwMakeContextCurrent(window);
         // Enable v-sync
@@ -93,15 +110,31 @@ public class OdysseyGame implements Runnable {
         // bindings available for use.
         GL.createCapabilities();
 
+        // Enable OpenGL features
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+
         System.out.println("OpenGL Version: " + glGetString(GL_VERSION));
+        
+        voxelEngine = new VoxelEngine(width, height);
+        voxelEngine.getCamera().setProjection(width, height);
+        lastFrameTime = glfwGetTime();
     }
 
     private void loop() {
         // Set the clear color
-        glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
+        glClearColor(0.5f, 0.8f, 1.0f, 1.0f); // A nice sky blue
 
         while (!glfwWindowShouldClose(window)) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+
+            double currentTime = glfwGetTime();
+            float deltaTime = (float)(currentTime - lastFrameTime);
+            lastFrameTime = currentTime;
+
+            voxelEngine.update(deltaTime);
+            voxelEngine.render(deltaTime);
 
             glfwSwapBuffers(window); // swap the color buffers
 
@@ -112,6 +145,8 @@ public class OdysseyGame implements Runnable {
     }
 
     private void cleanup() {
+        voxelEngine.cleanup();
+
         // Free the window callbacks and destroy the window
         glfwFreeCallbacks(window);
         glfwDestroyWindow(window);

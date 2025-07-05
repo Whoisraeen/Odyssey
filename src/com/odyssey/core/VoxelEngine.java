@@ -1,14 +1,24 @@
 package com.odyssey.core;
 
-import com.odyssey.rendering.RenderManager;
+import com.odyssey.rendering.ShaderManager;
 import com.odyssey.rendering.scene.Camera;
+import com.odyssey.world.Chunk;
 import com.odyssey.world.ChunkManager;
+import com.odyssey.world.ChunkPosition;
 import com.odyssey.world.MeshGenerator;
+import com.odyssey.world.WorldGenerator;
+import org.joml.Matrix4f;
 
+import java.nio.FloatBuffer;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Future;
+import com.odyssey.rendering.mesh.ChunkMesh;
+import org.lwjgl.system.MemoryStack;
+
+import static org.lwjgl.opengl.GL20.*;
 
 /**
  * Core Voxel Engine - High-performance world management with modern OpenGL
@@ -23,61 +33,95 @@ public class VoxelEngine {
     public static final int RENDER_DISTANCE = 16;
     
     // Threading
-    private final ExecutorService chunkLoadingPool;
     private final ExecutorService meshGenerationPool;
-    private final ScheduledExecutorService backgroundTasks;
     
     // Core systems
-    private final ChunkManager chunkManager;
-    private final MeshGenerator meshGenerator;
-    private final RenderManager renderManager;
     private final Camera camera;
+    private final ShaderManager shaderManager;
+    private final MeshGenerator meshGenerator;
+    private final WorldGenerator worldGenerator;
     
-    // Performance metrics
-    private final AtomicInteger chunksLoaded = new AtomicInteger(0);
-    private final AtomicInteger meshesGenerated = new AtomicInteger(0);
+    private final Map<ChunkPosition, Chunk> chunks = new ConcurrentHashMap<>();
+    private final Map<ChunkPosition, Future<ChunkMesh>> meshingFutures = new ConcurrentHashMap<>();
+    private int chunkShaderProgram;
     
-    public VoxelEngine() {
-        // Initialize thread pools based on CPU cores
+    public VoxelEngine(int windowWidth, int windowHeight) {
         int cores = Runtime.getRuntime().availableProcessors();
-        this.chunkLoadingPool = Executors.newFixedThreadPool(Math.max(4, cores / 2));
         this.meshGenerationPool = Executors.newFixedThreadPool(Math.max(2, cores / 4));
-        this.backgroundTasks = Executors.newScheduledThreadPool(2);
         
-        // Initialize core systems
-        this.chunkManager = new ChunkManager(chunkLoadingPool);
-        this.meshGenerator = new MeshGenerator(meshGenerationPool);
-        this.renderManager = new RenderManager();
         this.camera = new Camera();
+        this.shaderManager = new ShaderManager();
+        this.meshGenerator = new MeshGenerator(meshGenerationPool);
+        this.worldGenerator = new WorldGenerator();
         
-        System.out.println("VoxelEngine initialized with " + cores + " CPU cores");
-        System.out.println("Chunk loading threads: " + (cores / 2));
-        System.out.println("Mesh generation threads: " + (cores / 4));
+        // Load shaders
+        this.chunkShaderProgram = shaderManager.loadProgram("shaders/geometry.vert", "shaders/geometry.frag");
+
+        // Create and generate a few chunks for testing
+        for (int x = 0; x < 4; x++) {
+            for (int z = 0; z < 4; z++) {
+                ChunkPosition pos = new ChunkPosition(x, 0, z);
+                Chunk chunk = new Chunk(pos);
+                worldGenerator.generateChunk(chunk);
+                chunks.put(pos, chunk);
+            }
+        }
     }
     
     public void update(float deltaTime) {
         camera.update(deltaTime);
-        chunkManager.update(camera.getPosition());
+
+        // Check for completed mesh futures
+        meshingFutures.entrySet().removeIf(entry -> {
+            if (entry.getValue().isDone()) {
+                try {
+                    ChunkMesh mesh = entry.getValue().get();
+                    chunks.get(entry.getKey()).setMesh(mesh);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return true;
+            }
+            return false;
+        });
         
-        // Update performance metrics
-        if (System.currentTimeMillis() % 1000 < 16) { // Every second
-            System.out.println("Chunks loaded: " + chunksLoaded.get() + 
-                             ", Meshes generated: " + meshesGenerated.get());
+        // Check for dirty chunks and generate meshes
+        chunks.forEach((pos, chunk) -> {
+            if (chunk.isMeshDirty() && !meshingFutures.containsKey(pos)) {
+                Future<ChunkMesh> future = meshGenerator.generateMesh(chunk);
+                meshingFutures.put(pos, future);
+            }
+        });
+    }
+    
+    public void render(float deltaTime) {
+        glUseProgram(chunkShaderProgram);
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            // Set Projection and View matrices
+            FloatBuffer p = camera.getProjectionMatrix().get(stack.mallocFloat(16));
+            FloatBuffer v = camera.getViewMatrix().get(stack.mallocFloat(16));
+            glUniformMatrix4fv(glGetUniformLocation(chunkShaderProgram, "projection"), false, p);
+            glUniformMatrix4fv(glGetUniformLocation(chunkShaderProgram, "view"), false, v);
+            
+            // Render each chunk
+            for (Chunk chunk : chunks.values()) {
+                if (chunk.getVao() != 0) {
+                    Matrix4f model = new Matrix4f()
+                        .translate(chunk.getPosition().x * CHUNK_SIZE, 0, chunk.getPosition().z * CHUNK_SIZE);
+                    FloatBuffer m = model.get(stack.mallocFloat(16));
+                    glUniformMatrix4fv(glGetUniformLocation(chunkShaderProgram, "model"), false, m);
+                    chunk.render();
+                }
+            }
         }
     }
     
-    public void render() {
-        renderManager.render(camera, chunkManager.getVisibleChunks());
-    }
-    
     public void cleanup() {
-        chunkLoadingPool.shutdown();
         meshGenerationPool.shutdown();
-        backgroundTasks.shutdown();
-        chunkManager.cleanup();
-        renderManager.cleanup();
+        shaderManager.cleanup();
+        chunks.values().forEach(Chunk::cleanup);
     }
     
     public Camera getCamera() { return camera; }
-    public ChunkManager getChunkManager() { return chunkManager; }
 } 

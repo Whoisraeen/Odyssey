@@ -1,0 +1,1 @@
+// Fragment shader for deferred lighting pass 

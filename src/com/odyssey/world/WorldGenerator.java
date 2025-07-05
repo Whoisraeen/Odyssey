@@ -4,13 +4,12 @@ import static com.odyssey.core.VoxelEngine.CHUNK_HEIGHT;
 import static com.odyssey.core.VoxelEngine.CHUNK_SIZE;
 
 public class WorldGenerator {
-    public Chunk generateChunk(ChunkPosition position) {
-        Chunk chunk = new Chunk(position);
-        
+    public void generateChunk(Chunk chunk) {
         // Simple terrain generation
+        ChunkPosition position = chunk.getPosition();
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int z = 0; z < CHUNK_SIZE; z++) {
-                int height = 64 + (int)(Math.sin(position.x * CHUNK_SIZE + x) * 10);
+                int height = 64 + (int)(Math.sin((position.x * CHUNK_SIZE + x) * 0.1) * 10 + Math.cos((position.z * CHUNK_SIZE + z) * 0.1) * 10);
                 
                 for (int y = 0; y < height && y < CHUNK_HEIGHT; y++) {
                     if (y < height - 3) {
@@ -23,7 +22,5 @@ public class WorldGenerator {
                 }
             }
         }
-        
-        return chunk;
     }
 } 
