@@ -225,7 +225,7 @@ public class OdysseyGame implements Runnable {
             if (currentState == GameState.IN_GAME) {
                 // Initialize VoxelEngine if entering game for first time
                 if (voxelEngine == null) {
-                    voxelEngine = new VoxelEngine(soundManager);
+                    voxelEngine = new VoxelEngine(soundManager, width, height);
                     camera = voxelEngine.getCamera();
                     gameStateManager.setVoxelEngine(voxelEngine);
                 }

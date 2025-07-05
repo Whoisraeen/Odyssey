@@ -41,7 +41,7 @@ public class UIManager {
     private final AnimationManager animationManager;
     
     // Input handling
-    private final InputManager inputManager;
+    private InputManager inputManager;
     
     // Theme and styling
     private UITheme currentTheme;
@@ -53,10 +53,14 @@ public class UIManager {
     private static final int MSG_ANIMATION = 4;
     
     private UIManager() {
-        this.layoutManager = new LayoutManager();
+        this.layoutManager = new com.odyssey.ui.layout.LinearLayout(null);
         this.animationManager = new AnimationManager();
-        this.inputManager = new InputManager();
-        this.currentTheme = new DefaultUITheme();
+        this.inputManager = null; // Will be set later via setInputManager
+        this.currentTheme = new UITheme();
+    }
+    
+    public void setInputManager(InputManager inputManager) {
+        this.inputManager = inputManager;
     }
     
     public static UIManager getInstance() {
@@ -220,7 +224,7 @@ public class UIManager {
     
     // Input handling - post to UI thread
     public boolean handleMouseClick(double x, double y, int button) {
-        if (uiHandler != null) {
+        if (uiHandler != null && inputManager != null) {
             uiHandler.post(() -> inputManager.handleMouseClick(x, y, button, currentScreen, components));
             return true;
         }
@@ -228,7 +232,7 @@ public class UIManager {
     }
     
     public boolean handleMouseMove(double x, double y) {
-        if (uiHandler != null) {
+        if (uiHandler != null && inputManager != null) {
             uiHandler.post(() -> inputManager.handleMouseMove(x, y, currentScreen, components));
             return true;
         }
@@ -236,7 +240,7 @@ public class UIManager {
     }
     
     public boolean handleKeyPress(int key, int scancode, int mods) {
-        if (uiHandler != null) {
+        if (uiHandler != null && inputManager != null) {
             uiHandler.post(() -> inputManager.handleKeyPress(key, scancode, mods, currentScreen, components));
             return true;
         }
@@ -244,7 +248,7 @@ public class UIManager {
     }
     
     public boolean handleCharInput(int codepoint) {
-        if (uiHandler != null) {
+        if (uiHandler != null && inputManager != null) {
             uiHandler.post(() -> inputManager.handleCharInput(codepoint, currentScreen, components));
             return true;
         }
@@ -252,7 +256,7 @@ public class UIManager {
     }
     
     public boolean handleScroll(double xOffset, double yOffset) {
-        if (uiHandler != null) {
+        if (uiHandler != null && inputManager != null) {
             uiHandler.post(() -> inputManager.handleScroll(xOffset, yOffset, currentScreen, components));
             return true;
         }

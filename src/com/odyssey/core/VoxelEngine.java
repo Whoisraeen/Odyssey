@@ -84,7 +84,7 @@ public class VoxelEngine {
     private Raycaster.RaycastResult selectedBlock;
     private final Random random = new Random();
 
-    public VoxelEngine(SoundManager soundManager) {
+    public VoxelEngine(SoundManager soundManager, int width, int height) {
         this.meshGenerationPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         this.camera = new Camera();
         this.shaderManager = new ShaderManager();
@@ -102,7 +102,7 @@ public class VoxelEngine {
         this.environmentManager = new EnvironmentManager(soundManager);
         
         // Initialize advanced rendering pipeline
-        this.renderingPipeline = new AdvancedRenderingPipeline(1920, 1080, environmentManager);
+        this.renderingPipeline = new AdvancedRenderingPipeline(width, height, environmentManager);
         this.scene = new Scene();
         scene.setupDefaultLighting();
 
