@@ -126,12 +126,18 @@ public class PostProcessing {
     }
     
     private void loadShaders() {
-        // Placeholder shader IDs
-        toneMappingShader = 10;
-        bloomExtractShader = 11;
-        bloomBlurShader = 12;
-        bloomCombineShader = 13;
-        fxaaShader = 14;
+        ShaderManager shaderManager = new ShaderManager();
+        
+        // Load actual shader programs using fullscreen vertex shader
+        toneMappingShader = shaderManager.loadProgram(
+            "shaders/fullscreen.vert", "shaders/tone_mapping.frag");
+        bloomExtractShader = shaderManager.loadProgram(
+            "shaders/fullscreen.vert", "shaders/bloom_extract.frag");
+        bloomBlurShader = shaderManager.loadProgram(
+            "shaders/fullscreen.vert", "shaders/bloom_blur.frag");
+        bloomCombineShader = toneMappingShader; // Reuse tone mapping for combine
+        fxaaShader = shaderManager.loadProgram(
+            "shaders/fullscreen.vert", "shaders/fxaa.frag");
     }
     
     public void render(int colorTexture, int volumetricTexture, int cloudTexture, int depthTexture, float lightningFlash) {
@@ -251,9 +257,13 @@ public class PostProcessing {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT);
         
-        // Simple blit shader (copy texture to screen)
+        // Use a simple passthrough shader to copy texture to screen
+        glUseProgram(toneMappingShader); // Reuse tone mapping shader for simple blit
+        
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, enableFXAA ? hdrColorBuffer : finalColorBuffer);
+        glUniform1i(glGetUniformLocation(toneMappingShader, "hdrBuffer"), 0);
+        glUniform1f(glGetUniformLocation(toneMappingShader, "exposure"), 1.0f);
         
         glBindVertexArray(quadVAO);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

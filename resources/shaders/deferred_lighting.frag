@@ -810,6 +810,15 @@ vec3 reinhardToneMapping(vec3 color) {
 }
 
 /**
+ * Helper function for filmic tone mapping curve
+ */
+vec3 filmicCurve(vec3 x, float A, float B, float C, float D, float E, float F) {
+    vec3 numerator = ((x * (A * x + C * B) + D * E));
+    vec3 denominator = ((x * (A * x + B) + D * F));
+    return numerator / (denominator + EPSILON);
+}
+
+/**
  * Enhanced filmic tone mapping with customizable parameters
  */
 vec3 filmicToneMapping(vec3 color) {
@@ -823,21 +832,14 @@ vec3 filmicToneMapping(vec3 color) {
     float E = 0.02; // Toe numerator
     float F = 0.30; // Toe denominator
 
-    // Uncharted 2-style filmic curve, safe from division by zero
-    vec3 filmic(vec3 x) {
-        vec3 numerator = ((x * (A * x + C * B) + D * E));
-        vec3 denominator = ((x * (A * x + B) + D * F));
-        return numerator / (denominator + EPSILON);
-    }
-
     // Apply curve to input color
-    vec3 result = filmic(color);
+    vec3 result = filmicCurve(color, A, B, C, D, E, F);
 
     // Calculate normalization factor based on a white point.
     // The white point must also be multiplied by exposure to match the original's behavior.
     float whitePoint = 11.2;
     vec3 exposedWhitePoint = vec3(whitePoint) * exposure;
-    vec3 whiteResult = filmic(exposedWhitePoint);
+    vec3 whiteResult = filmicCurve(exposedWhitePoint, A, B, C, D, E, F);
 
     // Normalize and return
     return result / whiteResult;

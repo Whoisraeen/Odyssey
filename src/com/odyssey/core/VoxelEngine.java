@@ -193,8 +193,6 @@ public class VoxelEngine {
                  meshingFutures.put(chunk.getPosition(), meshGenerator.generateMesh(chunk));
             }
         }
-
-        chunks.values().forEach(Chunk::cleanup);
     }
     
     public void render() {
