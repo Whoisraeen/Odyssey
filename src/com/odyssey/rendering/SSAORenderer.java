@@ -101,6 +101,11 @@ public class SSAORenderer {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBuffer, 0);
         
+        // Check SSAO framebuffer completeness
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            throw new RuntimeException("SSAO framebuffer not complete: " + getFramebufferStatusString(glCheckFramebufferStatus(GL_FRAMEBUFFER)));
+        }
+        
         // SSAO blur framebuffer
         ssaoBlurFBO = glGenFramebuffers();
         glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
@@ -111,6 +116,11 @@ public class SSAORenderer {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoBlurBuffer, 0);
+        
+        // Check SSAO blur framebuffer completeness
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            throw new RuntimeException("SSAO blur framebuffer not complete: " + getFramebufferStatusString(glCheckFramebufferStatus(GL_FRAMEBUFFER)));
+        }
         
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
@@ -217,5 +227,31 @@ public class SSAORenderer {
     
     private float lerp(float a, float b, float f) {
         return a + f * (b - a);
+    }
+    
+    /**
+     * Helper method to get human-readable framebuffer status strings
+     */
+    private String getFramebufferStatusString(int status) {
+        switch (status) {
+            case GL_FRAMEBUFFER_COMPLETE:
+                return "GL_FRAMEBUFFER_COMPLETE";
+            case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+                return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
+            case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+                return "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
+            case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+                return "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER";
+            case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+                return "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER";
+            case GL_FRAMEBUFFER_UNSUPPORTED:
+                return "GL_FRAMEBUFFER_UNSUPPORTED";
+            case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+                return "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE";
+            case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+                return "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS";
+            default:
+                return "Unknown status: 0x" + Integer.toHexString(status);
+        }
     }
 }

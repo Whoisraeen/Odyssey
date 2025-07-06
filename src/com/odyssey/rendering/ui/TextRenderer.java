@@ -302,7 +302,30 @@ public class TextRenderer {
      * Update screen dimensions for projection matrix.
      */
     public void updateScreenSize(int width, int height) {
+        // Validate screen dimensions
+        if (width <= 0 || height <= 0) {
+            System.err.println("Warning: Invalid screen dimensions in TextRenderer (" + width + "x" + height + ")");
+            return;
+        }
+        
         Matrix4f projection = new Matrix4f().ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
+        
+        // Validate projection matrix for NaN/infinity values
+        boolean isValid = true;
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                float value = projection.get(i, j);
+                if (!Float.isFinite(value)) {
+                    System.err.println("Warning: Invalid projection matrix in TextRenderer (element [" + i + "][" + j + "]: " + value + ")");
+                    isValid = false;
+                    break;
+                }
+            }
+            if (!isValid) break;
+        }
+        
+        if (!isValid) return;
+        
         glUseProgram(shaderProgram);
         ShaderManager.setUniform(shaderProgram, "projection", projection);
     }

@@ -26,24 +26,61 @@ public class SpawnFinder {
             double angle = Math.random() * 2 * Math.PI;
             double distance = Math.random() * SEARCH_RADIUS;
             
-            int x = (int) (Math.cos(angle) * distance);
-            int z = (int) (Math.sin(angle) * distance);
+            // Validate angle and distance
+            if (!Double.isFinite(angle) || !Double.isFinite(distance)) {
+                System.err.println("Warning: Invalid angle or distance in spawn generation: angle=" + angle + ", distance=" + distance);
+                continue;
+            }
+            
+            double cosAngle = Math.cos(angle);
+            double sinAngle = Math.sin(angle);
+            
+            // Validate trigonometric results
+            if (!Double.isFinite(cosAngle) || !Double.isFinite(sinAngle)) {
+                System.err.println("Warning: Invalid trigonometric results: cos=" + cosAngle + ", sin=" + sinAngle);
+                continue;
+            }
+            
+            int x = (int) (cosAngle * distance);
+            int z = (int) (sinAngle * distance);
             
             // Sample terrain height at this location
             int terrainHeight = sampleTerrainHeight(worldGenerator, x, z);
+            
+            // Validate terrain height
+            if (terrainHeight < 0 || terrainHeight > VoxelEngine.CHUNK_HEIGHT) {
+                System.err.println("Warning: Invalid terrain height: " + terrainHeight + " at (" + x + ", " + z + ")");
+                continue;
+            }
             
             // Check if this is a valid spawn location
             int score = evaluateSpawnLocation(worldGenerator, x, terrainHeight, z);
             
             if (score > bestScore) {
                 bestScore = score;
-                bestSpawn.set(x + 0.5f, terrainHeight + 1, z + 0.5f); // Center in block + 1 block above
+                float spawnX = x + 0.5f;
+                float spawnY = terrainHeight + 1;
+                float spawnZ = z + 0.5f;
+                
+                // Validate spawn coordinates
+                if (Float.isFinite(spawnX) && Float.isFinite(spawnY) && Float.isFinite(spawnZ)) {
+                    bestSpawn.set(spawnX, spawnY, spawnZ);
+                } else {
+                    System.err.println("Warning: Invalid spawn coordinates calculated: (" + spawnX + ", " + spawnY + ", " + spawnZ + ")");
+                }
             }
             
             // If we found a perfect spot, use it
             if (score >= 100) {
                 break;
             }
+        }
+        
+        // Final validation of best spawn
+        if (!Float.isFinite(bestSpawn.x) || !Float.isFinite(bestSpawn.y) || !Float.isFinite(bestSpawn.z)) {
+            System.err.println("Warning: Best spawn contains invalid values: " + bestSpawn + ". Using safe fallback.");
+            bestSpawn.set(0, SEA_LEVEL + 10, 0);
+            bestScore = 0;
         }
         
         System.out.println("Found spawn location at: " + bestSpawn + " with score: " + bestScore);
@@ -57,10 +94,29 @@ public class SpawnFinder {
     private static int sampleTerrainHeight(WorldGenerator worldGenerator, int worldX, int worldZ) {
         // Replicate WorldGenerator logic for height calculation
         double continentFrequency = 0.004;
-        double continentNoise = (Math.sin(worldX * continentFrequency) + Math.cos(worldZ * continentFrequency)) / 2.0;
-        
         double elevationFrequency = 0.03;
-        double elevationNoise = (Math.sin(worldX * elevationFrequency) * 15 + Math.cos(worldZ * elevationFrequency) * 15);
+        
+        // Calculate noise values with validation
+        double continentSin = Math.sin(worldX * continentFrequency);
+        double continentCos = Math.cos(worldZ * continentFrequency);
+        double elevationSinX = Math.sin(worldX * elevationFrequency);
+        double elevationCosZ = Math.cos(worldZ * elevationFrequency);
+        
+        // Validate trigonometric results
+        if (!Double.isFinite(continentSin) || !Double.isFinite(continentCos) || 
+            !Double.isFinite(elevationSinX) || !Double.isFinite(elevationCosZ)) {
+            System.err.println("Warning: Invalid trigonometric results in terrain height calculation at (" + worldX + ", " + worldZ + ")");
+            return SEA_LEVEL + 5; // Safe fallback height
+        }
+        
+        double continentNoise = (continentSin + continentCos) / 2.0;
+        double elevationNoise = (elevationSinX * 15 + elevationCosZ * 15);
+        
+        // Validate noise values
+        if (!Double.isFinite(continentNoise) || !Double.isFinite(elevationNoise)) {
+            System.err.println("Warning: Invalid noise values in terrain height calculation: continent=" + continentNoise + ", elevation=" + elevationNoise);
+            return SEA_LEVEL + 5; // Safe fallback height
+        }
         
         int height;
         if (continentNoise > 0.15) { // Threshold for land
@@ -68,6 +124,9 @@ public class SpawnFinder {
         } else {
             height = 40; // Ocean floor
         }
+        
+        // Clamp height to valid range
+        height = Math.max(0, Math.min(height, VoxelEngine.CHUNK_HEIGHT - 1));
         
         return height;
     }

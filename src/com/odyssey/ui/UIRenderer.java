@@ -263,6 +263,14 @@ public class UIRenderer {
     }
     
     public void setProjectionMatrix(float[] matrix) {
+        // Validate matrix for NaN/infinity values
+        for (int i = 0; i < 16; i++) {
+            if (!Float.isFinite(matrix[i])) {
+                System.err.println("Warning: Invalid projection matrix detected in UIRenderer (element " + i + ": " + matrix[i] + ")");
+                return;
+            }
+        }
+        
         System.arraycopy(matrix, 0, currentState.projectionMatrix, 0, 16);
         
         try (MemoryStack stack = MemoryStack.stackPush()) {

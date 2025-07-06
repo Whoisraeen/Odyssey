@@ -92,10 +92,23 @@ public class VoxelEngine {
         this.worldGenerator = new WorldGenerator();
         // Find a safe spawn location using SpawnFinder
         Vector3f spawnLocation = SpawnFinder.findSafeSpawnLocation(worldGenerator);
+        
+        // Validate spawn location
+        if (!Float.isFinite(spawnLocation.x) || !Float.isFinite(spawnLocation.y) || !Float.isFinite(spawnLocation.z)) {
+            System.err.println("Error: Invalid spawn location returned: " + spawnLocation + ". Using safe fallback.");
+            spawnLocation.set(0, 72, 0); // Safe fallback above sea level
+        }
+        
         this.player = new Player(spawnLocation.x, spawnLocation.y, spawnLocation.z);
         
         // Position camera at player location
-        camera.setPosition(spawnLocation.x, spawnLocation.y + 1.7f, spawnLocation.z);
+        float cameraY = spawnLocation.y + 1.7f;
+        if (Float.isFinite(cameraY)) {
+            camera.setPosition(spawnLocation.x, cameraY, spawnLocation.z);
+        } else {
+            System.err.println("Error: Invalid camera Y position calculated: " + cameraY);
+            camera.setPosition(spawnLocation.x, spawnLocation.y + 2.0f, spawnLocation.z);
+        }
         camera.setPitch(-20.0f); // Look slightly downward to see terrain
         camera.setYaw(45.0f); // Look towards positive X and Z direction where chunks are
         this.selectionBoxRenderer = new SelectionBoxRenderer();
@@ -160,7 +173,23 @@ public class VoxelEngine {
             player.update(deltaTime, this, inputManager);
             // Update camera to follow player (first-person view)
             Vector3f playerPos = player.getPosition();
-            camera.setPosition(playerPos.x, playerPos.y + 1.6f, playerPos.z); // Eye level height
+            
+            // Validate player position before setting camera
+            if (!Float.isFinite(playerPos.x) || !Float.isFinite(playerPos.y) || !Float.isFinite(playerPos.z)) {
+                System.err.println("Error: Player position is invalid: " + playerPos + ". Resetting to safe location.");
+                // Reset player to a safe location
+                Vector3f safeSpawn = SpawnFinder.findSafeSpawnLocation(worldGenerator);
+                player.setPosition(safeSpawn.x, safeSpawn.y, safeSpawn.z);
+                playerPos = player.getPosition();
+            }
+            
+            float cameraY = playerPos.y + 1.6f;
+            if (Float.isFinite(cameraY)) {
+                camera.setPosition(playerPos.x, cameraY, playerPos.z); // Eye level height
+            } else {
+                System.err.println("Error: Invalid camera Y position calculated from player: " + cameraY);
+                camera.setPosition(playerPos.x, playerPos.y + 2.0f, playerPos.z);
+            }
         }
 
         // Pass EnvironmentManager to EntityManager

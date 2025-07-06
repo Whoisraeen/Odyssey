@@ -177,6 +177,12 @@ public class Matrix4f {
      * Multiply this matrix by another matrix
      */
     public Matrix4f multiply(Matrix4f other) {
+        // Validate input matrix
+        if (!isValidMatrix(other)) {
+            System.err.println("Warning: Invalid matrix in multiply operation");
+            return this;
+        }
+        
         float[] result = new float[16];
         
         for (int col = 0; col < 4; col++) {
@@ -186,6 +192,12 @@ public class Matrix4f {
                     m[1 * 4 + row] * other.m[col * 4 + 1] +
                     m[2 * 4 + row] * other.m[col * 4 + 2] +
                     m[3 * 4 + row] * other.m[col * 4 + 3];
+                    
+                // Validate each result element
+                if (!Float.isFinite(result[col * 4 + row])) {
+                    System.err.println("Warning: Matrix multiplication produced invalid value at [" + row + "][" + col + "]: " + result[col * 4 + row]);
+                    return this; // Keep original matrix
+                }
             }
         }
         
@@ -197,15 +209,33 @@ public class Matrix4f {
      * Transform a 3D point by this matrix
      */
     public Vector3f transform(Vector3f point) {
+        // Validate input point
+        if (!Float.isFinite(point.x) || !Float.isFinite(point.y) || !Float.isFinite(point.z)) {
+            System.err.println("Warning: Invalid point in transform operation: " + point);
+            return new Vector3f(0, 0, 0);
+        }
+        
         float x = point.x * m[0] + point.y * m[4] + point.z * m[8] + m[12];
         float y = point.x * m[1] + point.y * m[5] + point.z * m[9] + m[13];
         float z = point.x * m[2] + point.y * m[6] + point.z * m[10] + m[14];
         float w = point.x * m[3] + point.y * m[7] + point.z * m[11] + m[15];
         
-        if (w != 0.0f) {
+        // Validate transformation results
+        if (!Float.isFinite(x) || !Float.isFinite(y) || !Float.isFinite(z) || !Float.isFinite(w)) {
+            System.err.println("Warning: Matrix transformation produced invalid values");
+            return new Vector3f(0, 0, 0);
+        }
+        
+        if (w != 0.0f && Float.isFinite(w)) {
             x /= w;
             y /= w;
             z /= w;
+            
+            // Validate division results
+            if (!Float.isFinite(x) || !Float.isFinite(y) || !Float.isFinite(z)) {
+                System.err.println("Warning: Perspective division produced invalid values");
+                return new Vector3f(0, 0, 0);
+            }
         }
         
         return new Vector3f(x, y, z);
@@ -237,8 +267,9 @@ public class Matrix4f {
      */
     public Matrix4f invert() {
         float det = determinant();
-        if (Math.abs(det) < 1e-6f) {
-            throw new RuntimeException("Matrix is not invertible");
+        if (!Float.isFinite(det) || Math.abs(det) < 1e-6f) {
+            System.err.println("Warning: Matrix is not invertible (determinant: " + det + ")");
+            return this; // Keep original matrix instead of throwing exception
         }
         
         float[] inv = new float[16];
@@ -293,7 +324,12 @@ public class Matrix4f {
         
         float invDet = 1.0f / det;
         for (int i = 0; i < 16; i++) {
-            m[i] = inv[i] * invDet;
+            float newValue = inv[i] * invDet;
+            if (!Float.isFinite(newValue)) {
+                System.err.println("Warning: Matrix inversion produced invalid value at index " + i + ": " + newValue);
+                return this; // Keep original matrix
+            }
+            m[i] = newValue;
         }
         
         return this;
@@ -313,6 +349,31 @@ public class Matrix4f {
         
         System.arraycopy(temp, 0, m, 0, 16);
         return this;
+    }
+    
+    /**
+     * Check if this matrix contains valid (finite) values
+     */
+    public boolean isValidMatrix() {
+        for (int i = 0; i < 16; i++) {
+            if (!Float.isFinite(m[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Check if another matrix contains valid (finite) values
+     */
+    private boolean isValidMatrix(Matrix4f matrix) {
+        if (matrix == null) return false;
+        for (int i = 0; i < 16; i++) {
+            if (!Float.isFinite(matrix.m[i])) {
+                return false;
+            }
+        }
+        return true;
     }
     
     @Override

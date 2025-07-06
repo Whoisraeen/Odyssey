@@ -3,6 +3,7 @@ package com.odyssey.rendering;
 import com.odyssey.rendering.Camera;
 import com.odyssey.rendering.scene.Light;
 import com.odyssey.rendering.scene.RenderObject;
+import org.joml.Matrix3f;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
@@ -52,6 +53,16 @@ public class UniformBufferManager {
     }
     
     public void bindCameraUniforms(Camera camera) {
+        // Validate camera matrices before binding
+        if (!camera.isViewMatrixValid()) {
+            System.err.println("Warning: Invalid view matrix detected in UniformBufferManager");
+            return;
+        }
+        if (!camera.isProjectionMatrixValid()) {
+            System.err.println("Warning: Invalid projection matrix detected in UniformBufferManager");
+            return;
+        }
+        
         // For now, use traditional uniforms as fallback
         int currentProgram = glGetInteger(GL_CURRENT_PROGRAM);
         if (currentProgram != 0) {
@@ -80,10 +91,43 @@ public class UniformBufferManager {
     }
     
     public void bindObjectUniforms(RenderObject obj) {
-        // Placeholder implementation
+        // Bind model matrix uniform
+        int currentProgram = glGetInteger(GL_CURRENT_PROGRAM);
+        if (currentProgram != 0) {
+            int modelLoc = glGetUniformLocation(currentProgram, "model");
+            if (modelLoc != -1) {
+                try (MemoryStack stack = MemoryStack.stackPush()) {
+                    FloatBuffer modelBuffer = stack.mallocFloat(16);
+                    obj.getModelMatrix().get(modelBuffer);
+                    glUniformMatrix4fv(modelLoc, false, modelBuffer);
+                }
+            }
+            
+            // Bind normal matrix uniform if available
+            int normalMatrixLoc = glGetUniformLocation(currentProgram, "normalMatrix");
+            if (normalMatrixLoc != -1) {
+                try (MemoryStack stack = MemoryStack.stackPush()) {
+                    FloatBuffer normalBuffer = stack.mallocFloat(9);
+                    // Calculate normal matrix: transpose(inverse(model))
+                    Matrix3f normalMatrix = new Matrix3f(obj.getModelMatrix()).invert().transpose();
+                    normalMatrix.get(normalBuffer);
+                    glUniformMatrix3fv(normalMatrixLoc, false, normalBuffer);
+                }
+            }
+        }
     }
     
     public void updateCameraUniforms(Camera camera) {
+        // Validate camera matrices before updating uniform buffer
+        if (!camera.isViewMatrixValid()) {
+            System.err.println("Warning: Invalid view matrix detected in updateCameraUniforms");
+            return;
+        }
+        if (!camera.isProjectionMatrixValid()) {
+            System.err.println("Warning: Invalid projection matrix detected in updateCameraUniforms");
+            return;
+        }
+        
         if (cameraUBO != 0) {
             glBindBuffer(GL_UNIFORM_BUFFER, cameraUBO);
             try (MemoryStack stack = MemoryStack.stackPush()) {

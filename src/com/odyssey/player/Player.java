@@ -33,10 +33,20 @@ public class Player {
     private float maxHealth = 20.0f;
 
     public Player(float x, float y, float z) {
+        // Validate initial position
+        if (!Float.isFinite(x) || !Float.isFinite(y) || !Float.isFinite(z)) {
+            System.err.println("Warning: Invalid initial player position: (" + x + ", " + y + ", " + z + "). Using fallback.");
+            x = 0;
+            y = 72; // Safe height above sea level
+            z = 0;
+        }
+        
         this.position = new Vector3f(x, y, z);
         this.velocity = new Vector3f(0, 0, 0);
         this.rotation = new Vector3f(0, 0, 0);
         this.inventory = new Inventory();
+        
+        System.out.println("Player initialized at position: " + this.position);
     }
 
     public void update(float deltaTime, VoxelEngine engine, InputManager inputManager) {
@@ -68,20 +78,40 @@ public class Player {
             move.x += 1;
         }
 
+        // Reset horizontal velocity first
+        velocity.x = 0;
+        velocity.z = 0;
+
         if (move.lengthSquared() > 0) {
             move.normalize();
-            move.rotateY((float) Math.toRadians(rotation.y));
-            move.mul(currentSpeed * deltaTime);
             
-            // Basic collision detection
-            if (isPositionValid(new Vector3f(position).add(move.x, 0, 0), engine)) {
-                position.x += move.x;
+            // Validate normalized vector
+            if (!isValidVector(move)) {
+                System.err.println("Warning: Invalid move vector after normalization: " + move);
+                return;
             }
-            if (isPositionValid(new Vector3f(position).add(0, move.y, 0), engine)) {
-                position.y += move.y;
+            
+            move.rotateY((float) Math.toRadians(rotation.y));
+            move.mul(currentSpeed);
+            
+            // Validate final move vector
+            if (!isValidVector(move)) {
+                System.err.println("Warning: Invalid move vector after transformation: " + move);
+                return;
             }
-            if (isPositionValid(new Vector3f(position).add(0, 0, move.z), engine)) {
-                position.z += move.z;
+            
+            // Set velocity instead of directly modifying position
+            velocity.x = move.x;
+            velocity.z = move.z;
+            
+            // Validate velocity components
+            if (!Float.isFinite(velocity.x)) {
+                System.err.println("Warning: Invalid velocity.x calculated: " + velocity.x);
+                velocity.x = 0;
+            }
+            if (!Float.isFinite(velocity.z)) {
+                System.err.println("Warning: Invalid velocity.z calculated: " + velocity.z);
+                velocity.z = 0;
             }
         }
         
@@ -110,43 +140,77 @@ public class Player {
     }
 
     private void applyGravity(float deltaTime, VoxelEngine engine) {
+        // Validate deltaTime
+        if (!Float.isFinite(deltaTime) || deltaTime < 0) {
+            System.err.println("Warning: Invalid deltaTime in applyGravity: " + deltaTime);
+            return;
+        }
+        
         // Apply gravity
-        velocity.y += GRAVITY * deltaTime;
+        float newVelocityY = velocity.y + GRAVITY * deltaTime;
+        if (Float.isFinite(newVelocityY)) {
+            velocity.y = newVelocityY;
+        } else {
+            System.err.println("Warning: Invalid velocity.y calculated: " + newVelocityY);
+            velocity.y = 0;
+        }
 
         float dx = velocity.x * deltaTime;
         float dy = velocity.y * deltaTime;
         float dz = velocity.z * deltaTime;
-
-        // Reset horizontal velocity after applying it for this frame
-        velocity.x = 0;
-        velocity.z = 0;
-
-        // Broad-phase collision check extents
-        float checkWidth = PLAYER_WIDTH / 2f;
+        
+        // Validate movement deltas
+        if (!Float.isFinite(dx)) {
+            System.err.println("Warning: Invalid dx calculated: " + dx + " (velocity.x=" + velocity.x + ", deltaTime=" + deltaTime + ")");
+            dx = 0;
+        }
+        if (!Float.isFinite(dy)) {
+            System.err.println("Warning: Invalid dy calculated: " + dy + " (velocity.y=" + velocity.y + ", deltaTime=" + deltaTime + ")");
+            dy = 0;
+        }
+        if (!Float.isFinite(dz)) {
+            System.err.println("Warning: Invalid dz calculated: " + dz + " (velocity.z=" + velocity.z + ", deltaTime=" + deltaTime + ")");
+            dz = 0;
+        }
 
         // Check for collisions and resolve them one axis at a time
         // Y-axis
-        position.y += dy;
-        if (checkCollision(engine, 0, dy, 0)) {
-            position.y -= dy;
-            if (velocity.y < 0) {
-                onGround = true;
+        float newY = position.y + dy;
+        if (Float.isFinite(newY)) {
+            position.y = newY;
+            if (checkCollision(engine, 0, dy, 0)) {
+                position.y -= dy;
+                if (velocity.y < 0) {
+                    onGround = true;
+                }
+                velocity.y = 0;
+            } else {
+                onGround = false;
             }
-            velocity.y = 0;
         } else {
-            onGround = false;
+            System.err.println("Warning: Invalid Y position would result: " + newY);
         }
 
         // X-axis
-        position.x += dx;
-        if (checkCollision(engine, dx, 0, 0)) {
-            position.x -= dx;
+        float newX = position.x + dx;
+        if (Float.isFinite(newX)) {
+            position.x = newX;
+            if (checkCollision(engine, dx, 0, 0)) {
+                position.x -= dx;
+            }
+        } else {
+            System.err.println("Warning: Invalid X position would result: " + newX);
         }
 
         // Z-axis
-        position.z += dz;
-        if (checkCollision(engine, 0, 0, dz)) {
-            position.z -= dz;
+        float newZ = position.z + dz;
+        if (Float.isFinite(newZ)) {
+            position.z = newZ;
+            if (checkCollision(engine, 0, 0, dz)) {
+                position.z -= dz;
+            }
+        } else {
+            System.err.println("Warning: Invalid Z position would result: " + newZ);
         }
     }
 
@@ -221,7 +285,15 @@ public class Player {
     }
     
     public void setPosition(float x, float y, float z) {
-        this.position.set(x, y, z);
+        if (Float.isFinite(x) && Float.isFinite(y) && Float.isFinite(z)) {
+            this.position.set(x, y, z);
+        } else {
+            System.err.println("Warning: Attempted to set invalid player position: (" + x + ", " + y + ", " + z + ")");
+        }
+    }
+    
+    private boolean isValidVector(Vector3f vector) {
+        return Float.isFinite(vector.x) && Float.isFinite(vector.y) && Float.isFinite(vector.z);
     }
     
     public Inventory getInventory() {

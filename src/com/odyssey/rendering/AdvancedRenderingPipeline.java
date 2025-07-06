@@ -189,6 +189,10 @@ public class AdvancedRenderingPipeline {
         int shaderProgram = shaderPrograms.get("forward");
         glUseProgram(shaderProgram);
         
+        // Bind uniform buffers
+        uniformBuffers.bindCameraUniforms(camera);
+        uniformBuffers.bindMaterialUniforms();
+        
         // Bind lighting textures
         lightingSystem.bindLightingTextures();
         

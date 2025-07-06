@@ -163,12 +163,29 @@ public class ShadowMapping {
         // Placeholder implementation - would need actual camera for proper cascade calculation
         Vector3f lightDir = new Vector3f(directionalLight.getDirection()).normalize();
         
+        // Validate light direction
+        if (!isValidVector3f(lightDir)) {
+            System.err.println("Warning: Invalid light direction in shadow mapping: " + lightDir);
+            lightDir = new Vector3f(0, -1, 0); // Default downward direction
+        }
+        
         for (int i = 0; i < CASCADE_COUNT; i++) {
             float nearPlane = CASCADE_SPLITS[i];
             float farPlane = CASCADE_SPLITS[i + 1];
             
+            // Validate cascade distances
+            if (!Float.isFinite(nearPlane) || !Float.isFinite(farPlane) || nearPlane >= farPlane) {
+                System.err.println("Warning: Invalid cascade distances for cascade " + i + ": near=" + nearPlane + ", far=" + farPlane);
+                continue;
+            }
+            
             // Simple orthographic projection for now
             float size = farPlane * 0.5f;
+            if (!Float.isFinite(size) || size <= 0) {
+                System.err.println("Warning: Invalid cascade size for cascade " + i + ": " + size);
+                continue;
+            }
+            
             Matrix4f lightView = new Matrix4f().lookAt(
                 new Vector3f(lightDir).mul(-100.0f), 
                 new Vector3f(0, 0, 0), 
@@ -177,7 +194,15 @@ public class ShadowMapping {
             
             Matrix4f lightProj = new Matrix4f().ortho(-size, size, -size, size, 0.1f, 200.0f);
             
-            lightSpaceMatrices[i] = new Matrix4f(lightProj).mul(lightView);
+            Matrix4f lightSpaceMatrix = new Matrix4f(lightProj).mul(lightView);
+            
+            // Validate the resulting light space matrix
+            if (isValidMatrix4f(lightSpaceMatrix)) {
+                lightSpaceMatrices[i] = lightSpaceMatrix;
+            } else {
+                System.err.println("Warning: Invalid light space matrix for cascade " + i + ", using identity");
+                lightSpaceMatrices[i] = new Matrix4f(); // Identity matrix as fallback
+            }
         }
     }
     
@@ -193,6 +218,12 @@ public class ShadowMapping {
         // Upload light space matrices
         try (MemoryStack stack = MemoryStack.stackPush()) {
             for (int i = 0; i < CASCADE_COUNT; i++) {
+                // Validate matrix before uploading
+                if (!isValidMatrix4f(lightSpaceMatrices[i])) {
+                    System.err.println("Warning: Invalid light space matrix at cascade " + i + " during UBO update");
+                    continue;
+                }
+                
                 FloatBuffer matrixBuffer = stack.mallocFloat(16);
                 lightSpaceMatrices[i].get(matrixBuffer);
                 glBufferSubData(GL_UNIFORM_BUFFER, i * 64, matrixBuffer);
@@ -244,5 +275,31 @@ public class ShadowMapping {
         glDeleteFramebuffers(shadowMapFBO);
         glDeleteTextures(shadowMapArray);
         glDeleteBuffers(shadowUBO);
+    }
+    
+    /**
+     * Check if a Vector3f contains valid (finite) values
+     */
+    private boolean isValidVector3f(Vector3f vector) {
+        if (vector == null) return false;
+        return Float.isFinite(vector.x) && Float.isFinite(vector.y) && Float.isFinite(vector.z);
+    }
+    
+    /**
+     * Check if a Matrix4f contains valid (finite) values
+     */
+    private boolean isValidMatrix4f(Matrix4f matrix) {
+        if (matrix == null) return false;
+        
+        // Check all 16 matrix elements
+        for (int col = 0; col < 4; col++) {
+            for (int row = 0; row < 4; row++) {
+                float value = matrix.get(col, row);
+                if (!Float.isFinite(value)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

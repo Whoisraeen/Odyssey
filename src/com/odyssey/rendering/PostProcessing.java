@@ -71,6 +71,11 @@ public class PostProcessing {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hdrColorBuffer, 0);
         
+        // Check HDR framebuffer completeness
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            throw new RuntimeException("HDR framebuffer not complete: " + getFramebufferStatusString(glCheckFramebufferStatus(GL_FRAMEBUFFER)));
+        }
+        
         // Bloom extraction framebuffer
         bloomFBO = glGenFramebuffers();
         glBindFramebuffer(GL_FRAMEBUFFER, bloomFBO);
@@ -83,6 +88,11 @@ public class PostProcessing {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bloomColorBuffer, 0);
+        
+        // Check bloom framebuffer completeness
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            throw new RuntimeException("Bloom framebuffer not complete: " + getFramebufferStatusString(glCheckFramebufferStatus(GL_FRAMEBUFFER)));
+        }
         
         // Ping-pong framebuffers for bloom blur
         pingpongFBO1 = glGenFramebuffers();
@@ -97,6 +107,11 @@ public class PostProcessing {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongBuffer1, 0);
         
+        // Check ping-pong framebuffer 1 completeness
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            throw new RuntimeException("Ping-pong framebuffer 1 not complete: " + getFramebufferStatusString(glCheckFramebufferStatus(GL_FRAMEBUFFER)));
+        }
+        
         pingpongFBO2 = glGenFramebuffers();
         glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO2);
         
@@ -108,6 +123,11 @@ public class PostProcessing {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongBuffer2, 0);
+        
+        // Check ping-pong framebuffer 2 completeness
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            throw new RuntimeException("Ping-pong framebuffer 2 not complete: " + getFramebufferStatusString(glCheckFramebufferStatus(GL_FRAMEBUFFER)));
+        }
         
         // Final output framebuffer
         finalFBO = glGenFramebuffers();
@@ -121,6 +141,11 @@ public class PostProcessing {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, finalColorBuffer, 0);
+        
+        // Check final framebuffer completeness
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            throw new RuntimeException("Final framebuffer not complete: " + getFramebufferStatusString(glCheckFramebufferStatus(GL_FRAMEBUFFER)));
+        }
         
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
@@ -281,6 +306,32 @@ public class PostProcessing {
      */
     public int getFinalImageTexture() {
         return enableFXAA ? hdrColorBuffer : finalColorBuffer;
+    }
+    
+    /**
+     * Helper method to get human-readable framebuffer status strings
+     */
+    private String getFramebufferStatusString(int status) {
+        switch (status) {
+            case GL_FRAMEBUFFER_COMPLETE:
+                return "GL_FRAMEBUFFER_COMPLETE";
+            case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+                return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
+            case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+                return "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
+            case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+                return "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER";
+            case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+                return "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER";
+            case GL_FRAMEBUFFER_UNSUPPORTED:
+                return "GL_FRAMEBUFFER_UNSUPPORTED";
+            case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+                return "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE";
+            case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+                return "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS";
+            default:
+                return "Unknown status: 0x" + Integer.toHexString(status);
+        }
     }
     
     public void resize(int width, int height) {

@@ -70,10 +70,31 @@ public class RenderObject {
     }
     
     private void updateModelMatrix() {
+        // Validate transformation components for NaN/infinity values
+        if (!isValidVector3f(position)) {
+            System.err.println("Warning: Invalid position in RenderObject: " + position);
+            position.set(0.0f, 0.0f, 0.0f); // Reset to origin
+        }
+        if (!isValidQuaternion(rotation)) {
+            System.err.println("Warning: Invalid rotation in RenderObject: " + rotation);
+            rotation.identity(); // Reset to identity rotation
+        }
+        if (!isValidVector3f(scale)) {
+            System.err.println("Warning: Invalid scale in RenderObject: " + scale);
+            scale.set(1.0f, 1.0f, 1.0f); // Reset to unit scale
+        }
+        
         modelMatrix.identity()
             .translate(position)
             .rotate(rotation)
             .scale(scale);
+        
+        // Validate resulting model matrix
+        if (!isValidMatrix4f(modelMatrix)) {
+            System.err.println("Warning: Invalid model matrix generated in RenderObject");
+            // Reset to identity matrix as fallback
+            modelMatrix.identity();
+        }
     }
     
     public void translate(Vector3f translation) {
@@ -174,5 +195,26 @@ public class RenderObject {
     public void cleanup() {
         // Mesh cleanup is handled elsewhere
         // No cleanup needed for this object
+    }
+    
+    // Validation helper methods
+    private boolean isValidVector3f(Vector3f vector) {
+        return Float.isFinite(vector.x) && Float.isFinite(vector.y) && Float.isFinite(vector.z);
+    }
+    
+    private boolean isValidQuaternion(Quaternionf quaternion) {
+        return Float.isFinite(quaternion.x) && Float.isFinite(quaternion.y) && 
+               Float.isFinite(quaternion.z) && Float.isFinite(quaternion.w);
+    }
+    
+    private boolean isValidMatrix4f(Matrix4f matrix) {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (!Float.isFinite(matrix.get(i, j))) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

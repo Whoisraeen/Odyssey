@@ -164,8 +164,14 @@ public class OdysseyGame implements Runnable {
             this.width = w;
             this.height = h;
             glViewport(0, 0, w, h);
-            if (voxelEngine != null) {
-                voxelEngine.getCamera().setAspectRatio((float) w / h);
+            if (voxelEngine != null && h > 0) {
+                float aspectRatio = (float) w / h;
+                // Validate aspect ratio before setting
+                if (Float.isFinite(aspectRatio) && aspectRatio > 0.1f && aspectRatio < 10.0f) {
+                    voxelEngine.getCamera().setAspectRatio(aspectRatio);
+                } else {
+                    System.err.println("Warning: Invalid aspect ratio calculated: " + aspectRatio + " (w=" + w + ", h=" + h + ")");
+                }
             }
         });
         

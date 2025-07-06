@@ -168,6 +168,16 @@ public class Ship extends Entity {
     @Override
     public void render(int shaderProgram, Camera camera) {
         if (vao == 0) return;
+        
+        // Validate camera matrices before rendering
+        if (!camera.isViewMatrixValid()) {
+            System.err.println("Warning: Invalid view matrix detected in Ship render");
+            return;
+        }
+        if (!camera.isProjectionMatrixValid()) {
+            System.err.println("Warning: Invalid projection matrix detected in Ship render");
+            return;
+        }
 
         Matrix4f model = new Matrix4f()
             .translate(position)
