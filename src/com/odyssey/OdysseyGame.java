@@ -38,7 +38,7 @@ public class OdysseyGame implements Runnable {
     private long window;
     private int width = 1280;
     private int height = 720;
-
+    private GameStateManager gameStateManager;
     private VoxelEngine voxelEngine;
     private Camera camera;
     private double lastFrameTime;
@@ -47,7 +47,6 @@ public class OdysseyGame implements Runnable {
     private Crosshair crosshair;
     private Hotbar hotbar;
     private SoundManager soundManager;
-    private GameStateManager gameStateManager;
     
     // Mouse input tracking
     private boolean leftMousePressed = false;
@@ -393,8 +392,6 @@ public class OdysseyGame implements Runnable {
             }
         }
     }
-
-
 
     private void cleanup() {
         if (voxelEngine != null) {

@@ -31,7 +31,7 @@ public class GameStateManager {
         this.soundManager = soundManager;
         this.windowWidth = windowWidth;
         this.windowHeight = windowHeight;
-        this.currentState = GameState.IN_GAME; // Temporarily bypass menu for testing
+        this.currentState = GameState.MAIN_MENU;
         
         initializeMenus();
     }

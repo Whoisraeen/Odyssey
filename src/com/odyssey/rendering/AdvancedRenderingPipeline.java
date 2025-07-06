@@ -143,18 +143,26 @@ public class AdvancedRenderingPipeline {
         profiler.startSection("Volumetric Lighting");
         volumetricLighting.render(camera, scene.getLights(), gBuffer.getDepthTexture(), shadowMapping.getShadowMapTexture());
         profiler.endSection();
-        
-        // 6. Forward rendering pass (transparent objects)
+
+        // The G-Buffer depth buffer needs to be copied before any forward rendering
+        gBuffer.copyDepthToDefaultFramebuffer(screenWidth, screenHeight);
+
+        // 6. Skybox rendering pass
+        profiler.startSection("Skybox");
+        skyboxRenderer.render(camera, SkyboxRenderer.getTimeOfDay(), cloudCoverage, cloudDensity);
+        profiler.endSection();
+
+        // 7. Forward rendering pass (transparent objects)
         profiler.startSection("Forward Rendering");
         renderForward(camera, scene);
         profiler.endSection();
         
-        // 7. Cloud Pass
+        // 8. Cloud Pass
         profiler.startSection("Clouds");
         cloudRenderer.render(camera, time, cloudCoverage, cloudDensity);
         profiler.endSection();
         
-        // 8. Post-processing pipeline
+        // 9. Post-processing pipeline
         profiler.startSection("Post-Processing");
         postProcessing.render(lightingSystem.getLitTexture(), 
                             volumetricLighting.getVolumetricTexture(),
@@ -163,7 +171,7 @@ public class AdvancedRenderingPipeline {
                             lightningFlash);
         profiler.endSection();
         
-        // 9. Final composition - render to screen
+        // 10. Final composition - render to screen
         profiler.startSection("Final Composition");
         renderFinalComposition();
         profiler.endSection();
@@ -218,9 +226,6 @@ public class AdvancedRenderingPipeline {
     }
     
     private void renderForward(Camera camera, Scene scene) {
-        // Copy depth buffer from G-Buffer
-        gBuffer.copyDepthToDefaultFramebuffer(screenWidth, screenHeight);
-        
         // Use forward shader program
         int shaderProgram = shaderPrograms.get("forward");
         glUseProgram(shaderProgram);
