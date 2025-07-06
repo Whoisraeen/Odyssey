@@ -172,7 +172,7 @@ public class Label extends UIComponent {
     }
     
     @Override
-    public void setSize(int width, int height) {
+    public void setSize(float width, float height) {
         super.setSize(width, height);
         if (wordWrap && autoSize) {
             updateSize();

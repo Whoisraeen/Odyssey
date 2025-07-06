@@ -252,6 +252,10 @@ public abstract class UIComponent {
         return new ArrayList<>(children);
     }
     
+    public UIComponent getParent() {
+        return parent;
+    }
+    
     // Animation
     public void startAnimation(Animator animator) {
         animators.add(animator);
@@ -348,6 +352,17 @@ public abstract class UIComponent {
                 onFocusChangeListener.onFocusChange(this, focused);
             }
             invalidate();
+        }
+    }
+    
+    public void requestFocus() {
+        if (focusable && !focused) {
+            // Clear focus from other components
+            UIManager uiManager = UIManager.getInstance();
+            if (uiManager != null) {
+                uiManager.clearFocus();
+            }
+            setFocused(true);
         }
     }
     
@@ -456,6 +471,41 @@ public abstract class UIComponent {
     public void setLayoutParams(LayoutManager.LayoutParams layoutParams) {
         this.layoutParams = layoutParams;
         requestLayout();
+    }
+    
+    // Missing methods for InputManager compatibility
+    public void handleScroll(double xOffset, double yOffset) {
+        onScroll(xOffset, yOffset);
+    }
+    
+    public void handleCharInput(int codepoint) {
+        onCharInput(codepoint);
+    }
+    
+    public void handleKeyPress(int key, int scancode, int mods) {
+        onKeyPress(key, scancode, mods);
+    }
+    
+    public void handleMouseMove(double x, double y) {
+        onMouseMove(x, y);
+    }
+    
+    public void handleMouseClick(double x, double y, int button) {
+        onMouseClick(x, y, button);
+    }
+    
+    public void setParent(UIComponent parent) {
+        this.parent = parent;
+    }
+    
+    public void performClick() {
+        if (onClickListener != null) {
+            onClickListener.onClick(this);
+        }
+    }
+    
+    public OnHoverListener getOnHoverListener() {
+        return onHoverListener;
     }
     
     // Event listener interfaces

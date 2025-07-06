@@ -56,7 +56,7 @@ public class FrameLayout extends LayoutManager {
         }
     }
     
-    public static class FrameLayoutParams extends LayoutParams {
+    public static class FrameLayoutParams extends LayoutManager.LayoutParams {
         public Gravity gravity = Gravity.TOP_LEFT;
         
         public FrameLayoutParams() {
@@ -110,16 +110,16 @@ public class FrameLayout extends LayoutManager {
             measureChild(child, widthMeasureSpec, heightMeasureSpec);
             
             LayoutParams lp = child.getLayoutParams();
-            int childWidth = child.getMeasuredWidth() + lp.getTotalMarginHorizontal();
-            int childHeight = child.getMeasuredHeight() + lp.getTotalMarginVertical();
+            int childWidth = (int)child.getMeasuredWidth() + (int)lp.getTotalMarginHorizontal();
+            int childHeight = (int)child.getMeasuredHeight() + (int)lp.getTotalMarginVertical();
             
             maxWidth = Math.max(maxWidth, childWidth);
             maxHeight = Math.max(maxHeight, childHeight);
         }
         
         // Add padding
-        maxWidth += parent.getPaddingLeft() + parent.getPaddingRight();
-        maxHeight += parent.getPaddingTop() + parent.getPaddingBottom();
+        maxWidth += (int)(parent.getPaddingLeft() + parent.getPaddingRight());
+        maxHeight += (int)(parent.getPaddingTop() + parent.getPaddingBottom());
         
         // Set measured dimensions
         parent.setMeasuredDimension(
@@ -133,10 +133,10 @@ public class FrameLayout extends LayoutManager {
         List<UIComponent> children = getVisibleChildren();
         if (children.isEmpty()) return;
         
-        int paddingLeft = parent.getPaddingLeft();
-        int paddingTop = parent.getPaddingTop();
-        int paddingRight = parent.getPaddingRight();
-        int paddingBottom = parent.getPaddingBottom();
+        int paddingLeft = (int)parent.getPaddingLeft();
+        int paddingTop = (int)parent.getPaddingTop();
+        int paddingRight = (int)parent.getPaddingRight();
+        int paddingBottom = (int)parent.getPaddingBottom();
         
         int parentWidth = right - left;
         int parentHeight = bottom - top;
@@ -153,38 +153,38 @@ public class FrameLayout extends LayoutManager {
                 gravity = flp.gravity;
             }
             
-            int childWidth = child.getMeasuredWidth();
-            int childHeight = child.getMeasuredHeight();
+            int childWidth = (int)child.getMeasuredWidth();
+            int childHeight = (int)child.getMeasuredHeight();
             
             // Calculate available space for positioning
-            int availableWidth = contentWidth - lp.getTotalMarginHorizontal();
-            int availableHeight = contentHeight - lp.getTotalMarginVertical();
+            int availableWidth = contentWidth - (int)lp.getTotalMarginHorizontal();
+            int availableHeight = contentHeight - (int)lp.getTotalMarginVertical();
             
             // Calculate horizontal position
             int childLeft;
             if (gravity.isLeft()) {
-                childLeft = paddingLeft + lp.marginLeft;
+                childLeft = paddingLeft + (int)lp.marginLeft;
             } else if (gravity.isRight()) {
-                childLeft = paddingLeft + availableWidth - childWidth + lp.marginLeft;
+                childLeft = paddingLeft + availableWidth - childWidth + (int)lp.marginLeft;
             } else { // center horizontal
-                childLeft = paddingLeft + lp.marginLeft + (availableWidth - childWidth) / 2;
+                childLeft = paddingLeft + (int)lp.marginLeft + (availableWidth - childWidth) / 2;
             }
             
             // Calculate vertical position
             int childTop;
             if (gravity.isTop()) {
-                childTop = paddingTop + lp.marginTop;
+                childTop = paddingTop + (int)lp.marginTop;
             } else if (gravity.isBottom()) {
-                childTop = paddingTop + availableHeight - childHeight + lp.marginTop;
+                childTop = paddingTop + availableHeight - childHeight + (int)lp.marginTop;
             } else { // center vertical
-                childTop = paddingTop + lp.marginTop + (availableHeight - childHeight) / 2;
+                childTop = paddingTop + (int)lp.marginTop + (availableHeight - childHeight) / 2;
             }
             
             // Ensure child stays within bounds
-            childLeft = Math.max(paddingLeft + lp.marginLeft, 
-                       Math.min(childLeft, paddingLeft + contentWidth - childWidth - lp.marginRight));
-            childTop = Math.max(paddingTop + lp.marginTop, 
-                      Math.min(childTop, paddingTop + contentHeight - childHeight - lp.marginBottom));
+            childLeft = Math.max(paddingLeft + (int)lp.marginLeft, 
+                       Math.min(childLeft, paddingLeft + contentWidth - childWidth - (int)lp.marginRight));
+            childTop = Math.max(paddingTop + (int)lp.marginTop, 
+                      Math.min(childTop, paddingTop + contentHeight - childHeight - (int)lp.marginBottom));
             
             // Layout the child
             child.layout(childLeft, childTop, childLeft + childWidth, childTop + childHeight);
@@ -195,16 +195,16 @@ public class FrameLayout extends LayoutManager {
     public void calculateMinimumSize() {
         List<UIComponent> children = getVisibleChildren();
         
-        int minWidth = parent.getPaddingLeft() + parent.getPaddingRight();
-        int minHeight = parent.getPaddingTop() + parent.getPaddingBottom();
+        int minWidth = (int)(parent.getPaddingLeft() + parent.getPaddingRight());
+        int minHeight = (int)(parent.getPaddingTop() + parent.getPaddingBottom());
         
         // Frame layout minimum size is the maximum of all children
         for (UIComponent child : children) {
             LayoutParams lp = child.getLayoutParams();
-            minWidth = Math.max(minWidth, child.getMinWidth() + lp.getTotalMarginHorizontal() + 
-                               parent.getPaddingLeft() + parent.getPaddingRight());
-            minHeight = Math.max(minHeight, child.getMinHeight() + lp.getTotalMarginVertical() + 
-                                parent.getPaddingTop() + parent.getPaddingBottom());
+            minWidth = Math.max(minWidth, (int)(child.getMinWidth() + lp.getTotalMarginHorizontal() + 
+                               parent.getPaddingLeft() + parent.getPaddingRight()));
+            minHeight = Math.max(minHeight, (int)(child.getMinHeight() + lp.getTotalMarginVertical() + 
+                                parent.getPaddingTop() + parent.getPaddingBottom()));
         }
         
         parent.setMinWidth((float)minWidth);

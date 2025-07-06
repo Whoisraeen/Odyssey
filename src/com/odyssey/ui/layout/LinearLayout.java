@@ -81,8 +81,8 @@ public class LinearLayout extends LayoutManager {
         List<UIComponent> children = getVisibleChildren();
         if (children.isEmpty()) {
             parent.setMeasuredDimension(
-                resolveSize(parent.getPaddingLeft() + parent.getPaddingRight(), widthMeasureSpec),
-                resolveSize(parent.getPaddingTop() + parent.getPaddingBottom(), heightMeasureSpec)
+                resolveSize((int)(parent.getPaddingLeft() + parent.getPaddingRight()), widthMeasureSpec),
+                resolveSize((int)(parent.getPaddingTop() + parent.getPaddingBottom()), heightMeasureSpec)
             );
             return;
         }
@@ -111,14 +111,14 @@ public class LinearLayout extends LayoutManager {
                 weightedChildCount++;
             } else {
                 measureChild(child, widthMeasureSpec, heightMeasureSpec);
-                totalHeight += child.getMeasuredHeight() + lp.getTotalMarginVertical();
-                maxWidth = Math.max(maxWidth, child.getMeasuredWidth() + lp.getTotalMarginHorizontal());
+                totalHeight += (int)child.getMeasuredHeight() + (int)lp.getTotalMarginVertical();
+                maxWidth = Math.max(maxWidth, (int)child.getMeasuredWidth() + (int)lp.getTotalMarginHorizontal());
             }
         }
         
         // Add padding to dimensions
-        totalHeight += parent.getPaddingTop() + parent.getPaddingBottom();
-        maxWidth += parent.getPaddingLeft() + parent.getPaddingRight();
+        totalHeight += (int)(parent.getPaddingTop() + parent.getPaddingBottom());
+        maxWidth += (int)(parent.getPaddingLeft() + parent.getPaddingRight());
         
         // Calculate remaining space for weighted children
         int parentHeight = MeasureSpec.getSize(heightMeasureSpec);
@@ -133,15 +133,15 @@ public class LinearLayout extends LayoutManager {
                     int childHeight = (int) (remainingHeight * (lp.weight / totalWeight));
                     
                     int childWidthMeasureSpec = getChildMeasureSpec(widthMeasureSpec,
-                            parent.getPaddingLeft() + parent.getPaddingRight() + lp.getTotalMarginHorizontal(),
+                            (int)(parent.getPaddingLeft() + parent.getPaddingRight()) + (int)lp.getTotalMarginHorizontal(),
                             lp.width);
                     
                     int childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(childHeight, MeasureSpec.EXACTLY);
                     
                     child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
                     
-                    totalHeight += child.getMeasuredHeight() + lp.getTotalMarginVertical();
-                    maxWidth = Math.max(maxWidth, child.getMeasuredWidth() + lp.getTotalMarginHorizontal());
+                    totalHeight += (int)child.getMeasuredHeight() + (int)lp.getTotalMarginVertical();
+                    maxWidth = Math.max(maxWidth, (int)child.getMeasuredWidth() + (int)lp.getTotalMarginHorizontal());
                 }
             }
         }
@@ -170,14 +170,14 @@ public class LinearLayout extends LayoutManager {
                 weightedChildCount++;
             } else {
                 measureChild(child, widthMeasureSpec, heightMeasureSpec);
-                totalWidth += child.getMeasuredWidth() + lp.getTotalMarginHorizontal();
-                maxHeight = Math.max(maxHeight, child.getMeasuredHeight() + lp.getTotalMarginVertical());
+                totalWidth += (int)child.getMeasuredWidth() + (int)lp.getTotalMarginHorizontal();
+                maxHeight = Math.max(maxHeight, (int)child.getMeasuredHeight() + (int)lp.getTotalMarginVertical());
             }
         }
         
         // Add padding to dimensions
-        totalWidth += parent.getPaddingLeft() + parent.getPaddingRight();
-        maxHeight += parent.getPaddingTop() + parent.getPaddingBottom();
+        totalWidth += (int)(parent.getPaddingLeft() + parent.getPaddingRight());
+        maxHeight += (int)(parent.getPaddingTop() + parent.getPaddingBottom());
         
         // Calculate remaining space for weighted children
         int parentWidth = MeasureSpec.getSize(widthMeasureSpec);
@@ -194,13 +194,13 @@ public class LinearLayout extends LayoutManager {
                     int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(childWidth, MeasureSpec.EXACTLY);
                     
                     int childHeightMeasureSpec = getChildMeasureSpec(heightMeasureSpec,
-                            parent.getPaddingTop() + parent.getPaddingBottom() + lp.getTotalMarginVertical(),
+                            (int)(parent.getPaddingTop() + parent.getPaddingBottom()) + (int)lp.getTotalMarginVertical(),
                             lp.height);
                     
                     child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
                     
-                    totalWidth += child.getMeasuredWidth() + lp.getTotalMarginHorizontal();
-                    maxHeight = Math.max(maxHeight, child.getMeasuredHeight() + lp.getTotalMarginVertical());
+                    totalWidth += (int)child.getMeasuredWidth() + (int)lp.getTotalMarginHorizontal();
+                    maxHeight = Math.max(maxHeight, (int)child.getMeasuredHeight() + (int)lp.getTotalMarginVertical());
                 }
             }
         }
@@ -227,10 +227,10 @@ public class LinearLayout extends LayoutManager {
     private void layoutVertical(int left, int top, int right, int bottom) {
         List<UIComponent> children = getVisibleChildren();
         
-        int paddingLeft = parent.getPaddingLeft();
-        int paddingTop = parent.getPaddingTop();
-        int paddingRight = parent.getPaddingRight();
-        int paddingBottom = parent.getPaddingBottom();
+        int paddingLeft = (int)parent.getPaddingLeft();
+        int paddingTop = (int)parent.getPaddingTop();
+        int paddingRight = (int)parent.getPaddingRight();
+        int paddingBottom = (int)parent.getPaddingBottom();
         
         int width = right - left;
         int height = bottom - top;
@@ -244,7 +244,7 @@ public class LinearLayout extends LayoutManager {
             int totalChildrenHeight = 0;
             for (UIComponent child : children) {
                 LayoutParams lp = child.getLayoutParams();
-                totalChildrenHeight += child.getMeasuredHeight() + lp.getTotalMarginVertical();
+                totalChildrenHeight += (int)child.getMeasuredHeight() + (int)lp.getTotalMarginVertical();
             }
             
             int remainingHeight = height - paddingTop - paddingBottom - totalChildrenHeight;
@@ -266,8 +266,8 @@ public class LinearLayout extends LayoutManager {
         for (UIComponent child : children) {
             LayoutParams lp = child.getLayoutParams();
             
-            int childWidth = child.getMeasuredWidth();
-            int childHeight = child.getMeasuredHeight();
+            int childWidth = (int)child.getMeasuredWidth();
+            int childHeight = (int)child.getMeasuredHeight();
             
             // Apply horizontal gravity for individual child
             int childLeftPos = childLeft + lp.marginLeft;
@@ -296,17 +296,17 @@ public class LinearLayout extends LayoutManager {
                 childTop + lp.marginTop + childHeight
             );
             
-            childTop += childHeight + lp.getTotalMarginVertical();
+            childTop += childHeight + (int)lp.getTotalMarginVertical();
         }
     }
     
     private void layoutHorizontal(int left, int top, int right, int bottom) {
         List<UIComponent> children = getVisibleChildren();
         
-        int paddingLeft = parent.getPaddingLeft();
-        int paddingTop = parent.getPaddingTop();
-        int paddingRight = parent.getPaddingRight();
-        int paddingBottom = parent.getPaddingBottom();
+        int paddingLeft = (int)parent.getPaddingLeft();
+        int paddingTop = (int)parent.getPaddingTop();
+        int paddingRight = (int)parent.getPaddingRight();
+        int paddingBottom = (int)parent.getPaddingBottom();
         
         int width = right - left;
         int height = bottom - top;
@@ -320,7 +320,7 @@ public class LinearLayout extends LayoutManager {
             int totalChildrenWidth = 0;
             for (UIComponent child : children) {
                 LayoutParams lp = child.getLayoutParams();
-                totalChildrenWidth += child.getMeasuredWidth() + lp.getTotalMarginHorizontal();
+                totalChildrenWidth += (int)child.getMeasuredWidth() + (int)lp.getTotalMarginHorizontal();
             }
             
             int remainingWidth = width - paddingLeft - paddingRight - totalChildrenWidth;
@@ -342,8 +342,8 @@ public class LinearLayout extends LayoutManager {
         for (UIComponent child : children) {
             LayoutParams lp = child.getLayoutParams();
             
-            int childWidth = child.getMeasuredWidth();
-            int childHeight = child.getMeasuredHeight();
+            int childWidth = (int)child.getMeasuredWidth();
+            int childHeight = (int)child.getMeasuredHeight();
             
             // Apply vertical gravity for individual child
             int childTopPos = childTop + lp.marginTop;
@@ -372,7 +372,7 @@ public class LinearLayout extends LayoutManager {
                 childTopPos + childHeight
             );
             
-            childLeft += childWidth + lp.getTotalMarginHorizontal();
+            childLeft += childWidth + (int)lp.getTotalMarginHorizontal();
         }
     }
     
@@ -380,23 +380,23 @@ public class LinearLayout extends LayoutManager {
     public void calculateMinimumSize() {
         List<UIComponent> children = getVisibleChildren();
         
-        int minWidth = parent.getPaddingLeft() + parent.getPaddingRight();
-        int minHeight = parent.getPaddingTop() + parent.getPaddingBottom();
+        int minWidth = (int)(parent.getPaddingLeft() + parent.getPaddingRight());
+        int minHeight = (int)(parent.getPaddingTop() + parent.getPaddingBottom());
         
         if (orientation == Orientation.VERTICAL) {
             int maxChildWidth = 0;
             for (UIComponent child : children) {
                 LayoutParams lp = child.getLayoutParams();
-                minHeight += child.getMinHeight() + lp.getTotalMarginVertical();
-                maxChildWidth = Math.max(maxChildWidth, child.getMinWidth() + lp.getTotalMarginHorizontal());
+                minHeight += (int)child.getMinHeight() + (int)lp.getTotalMarginVertical();
+                maxChildWidth = Math.max(maxChildWidth, (int)child.getMinWidth() + (int)lp.getTotalMarginHorizontal());
             }
             minWidth += maxChildWidth;
         } else {
             int maxChildHeight = 0;
             for (UIComponent child : children) {
                 LayoutParams lp = child.getLayoutParams();
-                minWidth += child.getMinWidth() + lp.getTotalMarginHorizontal();
-                maxChildHeight = Math.max(maxChildHeight, child.getMinHeight() + lp.getTotalMarginVertical());
+                minWidth += (int)child.getMinWidth() + (int)lp.getTotalMarginHorizontal();
+                maxChildHeight = Math.max(maxChildHeight, (int)child.getMinHeight() + (int)lp.getTotalMarginVertical());
             }
             minHeight += maxChildHeight;
         }

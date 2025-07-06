@@ -282,7 +282,7 @@ public class TextField extends UIComponent {
     private void updateScrollOffset() {
         // Simplified scroll calculation
         int charWidth = 8; // Approximate character width
-        int contentWidth = getWidth() - getPaddingLeft() - getPaddingRight();
+        int contentWidth = (int)getWidth() - (int)getPaddingLeft() - (int)getPaddingRight();
         int cursorX = cursorPosition * charWidth;
         
         // Scroll to keep cursor visible
@@ -383,17 +383,17 @@ public class TextField extends UIComponent {
     }
     
     @Override
-    public boolean onMouseClick(int mouseX, int mouseY, int button) {
+    public boolean onMouseClick(double mouseX, double mouseY, int button) {
         if (!isEnabled() || !isVisible()) {
             return false;
         }
         
-        if (contains(mouseX, mouseY)) {
+        if (contains((int)mouseX, (int)mouseY)) {
             requestFocus();
             
             // Calculate cursor position from mouse click
             int textLeft = (int) getLeft() + (int) getPaddingLeft();
-            int relativeX = mouseX - textLeft + scrollOffset;
+            int relativeX = (int)mouseX - textLeft + scrollOffset;
             int charWidth = 8; // Approximate
             int newCursorPos = Math.max(0, Math.min(text.length(), relativeX / charWidth));
             

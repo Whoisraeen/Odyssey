@@ -143,4 +143,71 @@ public class InputManager {
         glfwGetCursorPos(window, null, ypos);
         return ypos[0];
     }
+    
+    public void handleScroll(double xOffset, double yOffset, com.odyssey.ui.UIScreen currentScreen, java.util.List<com.odyssey.ui.UIComponent> components) {
+        // Handle scroll events for UI components
+        if (currentScreen != null && components != null) {
+            for (com.odyssey.ui.UIComponent component : components) {
+                if (component != null && component.isVisible()) {
+                    // Check if mouse is over the component and handle scroll
+                    double mouseX = getMouseX();
+                    double mouseY = getMouseY();
+                    if (component.contains((float)mouseX, (float)mouseY)) {
+                        component.handleScroll(xOffset, yOffset);
+                        break; // Only handle scroll for the topmost component
+                    }
+                }
+            }
+        }
+    }
+    
+    public void handleCharInput(int codepoint, com.odyssey.ui.UIScreen currentScreen, java.util.List<com.odyssey.ui.UIComponent> components) {
+        // Handle character input for UI components
+        if (currentScreen != null && components != null) {
+            for (com.odyssey.ui.UIComponent component : components) {
+                if (component != null && component.isVisible() && component.isFocused()) {
+                    component.handleCharInput(codepoint);
+                    break; // Only handle input for the focused component
+                }
+            }
+        }
+    }
+    
+    public void handleKeyPress(int key, int scancode, int mods, com.odyssey.ui.UIScreen currentScreen, java.util.List<com.odyssey.ui.UIComponent> components) {
+        // Handle key press events for UI components
+        if (currentScreen != null && components != null) {
+            for (com.odyssey.ui.UIComponent component : components) {
+                if (component != null && component.isVisible() && component.isFocused()) {
+                    component.handleKeyPress(key, scancode, mods);
+                    break; // Only handle input for the focused component
+                }
+            }
+        }
+    }
+    
+    public void handleMouseMove(double x, double y, com.odyssey.ui.UIScreen currentScreen, java.util.List<com.odyssey.ui.UIComponent> components) {
+        // Handle mouse movement events for UI components
+        if (currentScreen != null && components != null) {
+            for (com.odyssey.ui.UIComponent component : components) {
+                if (component != null && component.isVisible()) {
+                    component.handleMouseMove(x, y);
+                }
+            }
+        }
+    }
+    
+    public void handleMouseClick(double x, double y, int button, com.odyssey.ui.UIScreen currentScreen, java.util.List<com.odyssey.ui.UIComponent> components) {
+        // Handle mouse click events for UI components
+        if (currentScreen != null && components != null) {
+            for (com.odyssey.ui.UIComponent component : components) {
+                if (component != null && component.isVisible()) {
+                    // Check if mouse is over the component and handle click
+                    if (component.contains((float)x, (float)y)) {
+                        component.handleMouseClick(x, y, button);
+                        break; // Only handle click for the topmost component
+                    }
+                }
+            }
+        }
+    }
 }

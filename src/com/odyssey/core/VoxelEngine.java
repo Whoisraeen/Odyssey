@@ -314,7 +314,7 @@ public class VoxelEngine {
         // Day/Night Cycle tint
         float time = environmentManager.getWorldClock().getTimeOfDay();
         if (time > 12000 || time < 500) { // Night
-             color.mul(0.1f);
+             color.mul(0.4f); // Increased from 0.1f to make night more visible
         } else if (time > 10000) { // Sunset
             color.lerp(new Vector3f(1.0f, 0.5f, 0.2f), (time - 10000) / 2000f);
         } else if (time < 2000) { // Sunrise

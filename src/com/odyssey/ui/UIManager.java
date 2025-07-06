@@ -222,6 +222,21 @@ public class UIManager {
         layoutManager.requestLayout();
     }
     
+    public void clearFocus() {
+        for (UIComponent component : components) {
+            clearFocusRecursive(component);
+        }
+    }
+    
+    private void clearFocusRecursive(UIComponent component) {
+        if (component.isFocused()) {
+            component.setFocused(false);
+        }
+        for (UIComponent child : component.getChildren()) {
+            clearFocusRecursive(child);
+        }
+    }
+    
     // Input handling - post to UI thread
     public boolean handleMouseClick(double x, double y, int button) {
         if (uiHandler != null && inputManager != null) {

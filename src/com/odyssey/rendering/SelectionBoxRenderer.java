@@ -63,6 +63,10 @@ public class SelectionBoxRenderer {
     }
 
     public void render(Matrix4f view, Matrix4f projection, Vector3i blockPos) {
+        // Save current OpenGL state
+        int previousProgram = glGetInteger(GL_CURRENT_PROGRAM);
+        int previousVAO = glGetInteger(GL_VERTEX_ARRAY_BINDING);
+        
         glUseProgram(shaderProgram);
 
         Matrix4f model = new Matrix4f()
@@ -77,7 +81,10 @@ public class SelectionBoxRenderer {
 
         glBindVertexArray(vao);
         glDrawArrays(GL_LINES, 0, 24);
-        glBindVertexArray(0);
+        
+        // Restore previous OpenGL state
+        glBindVertexArray(previousVAO);
+        glUseProgram(previousProgram);
     }
 
     public void cleanup() {
@@ -85,4 +92,4 @@ public class SelectionBoxRenderer {
         glDeleteVertexArrays(vao);
         glDeleteBuffers(vbo);
     }
-} 
+}

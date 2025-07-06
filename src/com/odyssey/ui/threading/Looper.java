@@ -82,7 +82,7 @@ public final class Looper {
             
             // This must be in a local variable, in case a UI event sets the logger
             final long start = System.currentTimeMillis();
-            final long end;
+            long end = 0;
             try {
                 msg.getTarget().dispatchMessage(msg);
                 end = System.currentTimeMillis();

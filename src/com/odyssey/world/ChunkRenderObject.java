@@ -3,6 +3,7 @@ package com.odyssey.world;
 import com.odyssey.rendering.scene.RenderObject;
 import com.odyssey.rendering.scene.Material;
 import com.odyssey.rendering.mesh.Mesh;
+import com.odyssey.rendering.Texture;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -16,8 +17,11 @@ public class ChunkRenderObject extends RenderObject {
     private final Chunk chunk;
     private final ChunkMesh chunkMesh;
     
+    // Shared terrain texture for all chunks
+    private static int terrainTexture = 0;
+    
     public ChunkRenderObject(Chunk chunk) {
-        super(new ChunkMesh(chunk), Material.createDielectric(new Vector3f(0.5f, 0.8f, 0.3f), 0.8f));
+        super(new ChunkMesh(chunk), createChunkMaterial());
         this.chunk = chunk;
         this.chunkMesh = (ChunkMesh) getMesh();
         
@@ -28,6 +32,21 @@ public class ChunkRenderObject extends RenderObject {
             chunk.getPosition().z * CHUNK_SIZE
         );
         setPosition(chunkWorldPos);
+    }
+    
+    /**
+     * Creates a material with the terrain texture for chunks
+     */
+    private static Material createChunkMaterial() {
+        // Load terrain texture if not already loaded
+        if (terrainTexture == 0) {
+            terrainTexture = Texture.loadTexture("assets/textures/terrain.png");
+        }
+        
+        // Create material with terrain texture
+        Material material = Material.createDielectric(new Vector3f(1.0f, 1.0f, 1.0f), 0.8f);
+        material.setAlbedoTexture(terrainTexture);
+        return material;
     }
     
     // Inherited getMaterial() and getMesh() from parent class

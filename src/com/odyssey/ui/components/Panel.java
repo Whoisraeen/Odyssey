@@ -164,11 +164,11 @@ public class Panel extends UIComponent {
     }
     
     @Override
-    public void layout(int left, int top, int right, int bottom) {
+    public void layout(float left, float top, float right, float bottom) {
         super.layout(left, top, right, bottom);
         
         if (layoutManager != null) {
-            layoutManager.layoutChildren(left, top, right, bottom);
+            layoutManager.layoutChildren((int)left, (int)top, (int)right, (int)bottom);
         }
     }
     
@@ -227,7 +227,7 @@ public class Panel extends UIComponent {
     }
     
     @Override
-    public boolean onMouseClick(int mouseX, int mouseY, int button) {
+    public boolean onMouseClick(double mouseX, double mouseY, int button) {
         if (!isVisible() || !isEnabled()) {
             return false;
         }
@@ -241,7 +241,7 @@ public class Panel extends UIComponent {
         }
         
         // Handle panel click if clickable
-        if (isClickable() && contains(mouseX, mouseY)) {
+        if (isClickable() && contains((int)mouseX, (int)mouseY)) {
             performClick();
             return true;
         }
@@ -250,7 +250,7 @@ public class Panel extends UIComponent {
     }
     
     @Override
-    public boolean onMouseMove(int mouseX, int mouseY) {
+    public boolean onMouseMove(double mouseX, double mouseY) {
         if (!isVisible() || !isEnabled()) {
             return false;
         }
@@ -266,7 +266,7 @@ public class Panel extends UIComponent {
         
         // Update own hover state
         boolean wasHovered = isHovered();
-        boolean nowHovered = contains(mouseX, mouseY);
+        boolean nowHovered = contains((int)mouseX, (int)mouseY);
         
         if (wasHovered != nowHovered) {
             setHovered(nowHovered);
@@ -373,7 +373,7 @@ public class Panel extends UIComponent {
             return this;
         }
         
-        public Builder setSize(int width, int height) {
+        public Builder setSize(float width, float height) {
             panel.setSize(width, height);
             return this;
         }

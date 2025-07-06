@@ -411,16 +411,16 @@ public class RelativeLayout extends LayoutManager {
     public void calculateMinimumSize() {
         List<UIComponent> children = getVisibleChildren();
         
-        int minWidth = parent.getPaddingLeft() + parent.getPaddingRight();
-        int minHeight = parent.getPaddingTop() + parent.getPaddingBottom();
+        int minWidth = (int)(parent.getPaddingLeft() + parent.getPaddingRight());
+        int minHeight = (int)(parent.getPaddingTop() + parent.getPaddingBottom());
         
         // For relative layout, minimum size is the maximum extent of any child
         for (UIComponent child : children) {
             LayoutParams lp = child.getLayoutParams();
-            minWidth = Math.max(minWidth, child.getMinWidth() + lp.getTotalMarginHorizontal() + 
-                               parent.getPaddingLeft() + parent.getPaddingRight());
-            minHeight = Math.max(minHeight, child.getMinHeight() + lp.getTotalMarginVertical() + 
-                                parent.getPaddingTop() + parent.getPaddingBottom());
+            minWidth = Math.max(minWidth, (int)(child.getMinWidth() + lp.getTotalMarginHorizontal()) + 
+                               (int)(parent.getPaddingLeft() + parent.getPaddingRight()));
+            minHeight = Math.max(minHeight, (int)(child.getMinHeight() + lp.getTotalMarginVertical()) + 
+                                (int)(parent.getPaddingTop() + parent.getPaddingBottom()));
         }
         
         parent.setMinWidth(minWidth);

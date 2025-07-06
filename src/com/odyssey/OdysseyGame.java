@@ -26,6 +26,11 @@ import static org.lwjgl.glfw.GLFW.GLFW_CURSOR;
 import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_DISABLED;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.opengl.GL11.GL_NO_ERROR;
+import static org.lwjgl.opengl.GL11.GL_INVALID_ENUM;
+import static org.lwjgl.opengl.GL11.GL_INVALID_VALUE;
+import static org.lwjgl.opengl.GL11.GL_INVALID_OPERATION;
+import static org.lwjgl.opengl.GL11.GL_OUT_OF_MEMORY;
 
 import com.odyssey.audio.SoundManager;
 
@@ -230,6 +235,8 @@ public class OdysseyGame implements Runnable {
         System.out.println("DEBUG: InputManager created successfully");
         
         System.out.println("DEBUG: Initialization complete, starting game loop");
+        System.out.println("DEBUG: Current GameState: " + gameStateManager.getCurrentState());
+        System.out.println("DEBUG: Window should close: " + glfwWindowShouldClose(window));
     }
 
     private void gameLoop() {
@@ -260,6 +267,7 @@ public class OdysseyGame implements Runnable {
                 
                 handleInput(deltaTime);
                 voxelEngine.update(deltaTime, inputManager);
+                
                 voxelEngine.render();
 
                 // Render game UI
@@ -381,6 +389,8 @@ public class OdysseyGame implements Runnable {
             }
         }
     }
+
+
 
     private void cleanup() {
         if (voxelEngine != null) {

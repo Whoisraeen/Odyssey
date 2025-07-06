@@ -15,6 +15,8 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL32.GL_GEOMETRY_SHADER;
+import static org.lwjgl.opengl.GL43.GL_COMPUTE_SHADER;
 
 public class ShaderManager {
     private static final Logger LOGGER = Logger.getLogger(ShaderManager.class.getName());

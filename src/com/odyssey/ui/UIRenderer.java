@@ -402,11 +402,11 @@ public class UIRenderer {
     }
     
     public float getTextWidth(String text) {
-        return textRenderer != null ? textRenderer.getTextWidth(text) : 0;
+        return textRenderer != null ? textRenderer.getTextWidth(text, 1.0f) : 0;
     }
     
     public float getTextHeight() {
-        return textRenderer != null ? textRenderer.getTextHeight() : 0;
+        return textRenderer != null ? textRenderer.getTextHeight(1.0f) : 0;
     }
     
     public void drawLine(float x1, float y1, float x2, float y2, int color, float thickness) {

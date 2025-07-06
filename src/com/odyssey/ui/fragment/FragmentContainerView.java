@@ -2,6 +2,8 @@ package com.odyssey.ui.fragment;
 
 import com.odyssey.ui.UIComponent;
 import com.odyssey.ui.UIRenderer;
+import com.odyssey.ui.layout.LayoutManager;
+
 import java.util.ArrayList;
 import java.util.List;
 

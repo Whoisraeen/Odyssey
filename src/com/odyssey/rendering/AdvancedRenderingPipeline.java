@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.lwjgl.opengl.GL20;
 import static org.lwjgl.opengl.GL45.*;
+import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import com.odyssey.rendering.lighting.VolumetricLighting;
 import com.odyssey.rendering.lighting.ShadowMapping;
 import com.odyssey.rendering.clouds.CloudRenderer;
@@ -63,6 +64,7 @@ public class AdvancedRenderingPipeline {
         // Initialize systems
         this.gBuffer = new GBuffer(width, height);
         this.lightingSystem = new LightingSystem();
+        this.lightingSystem.initialize(width, height);
         this.postProcessing = new PostProcessing(width, height);
         this.volumetricLighting = new VolumetricLighting(width, height);
         this.ssaoRenderer = new SSAORenderer(width, height);
@@ -75,6 +77,13 @@ public class AdvancedRenderingPipeline {
         setupFinalQuad();
         initializeShaders();
         initializeUniforms();
+        
+        // Configure post-processing parameters for proper brightness
+        postProcessing.setExposure(2.0f);  // Increase exposure for brighter image
+        postProcessing.setBloomThreshold(1.0f);
+        postProcessing.setBloomIntensity(0.04f);
+        postProcessing.setBloomEnabled(true);
+        postProcessing.setFXAAEnabled(true);
         
         // Enable advanced OpenGL features
         glEnable(GL_DEPTH_TEST);
@@ -168,6 +177,20 @@ public class AdvancedRenderingPipeline {
         // Bind uniform buffers
         uniformBuffers.bindCameraUniforms(camera);
         uniformBuffers.bindMaterialUniforms();
+        
+        // Pass environmental uniforms to the geometry shader
+        glUniform1f(glGetUniformLocation(shaderProgram, "u_time"), (float)glfwGetTime());
+        glUniform1f(glGetUniformLocation(shaderProgram, "u_windStrength"), environmentManager.getWindSpeed());
+        glUniform3f(glGetUniformLocation(shaderProgram, "u_windDirection"), 
+                   environmentManager.getWindDirection().x, 
+                   0.0f, 
+                   environmentManager.getWindDirection().y);
+        glUniform1f(glGetUniformLocation(shaderProgram, "u_windFrequency"), 2.0f); // Default wind frequency
+        
+        // Pass quality flags
+        glUniform1i(glGetUniformLocation(shaderProgram, "u_enableWindAnimation"), 1);
+        glUniform1i(glGetUniformLocation(shaderProgram, "u_enableTangentSpace"), 1);
+        glUniform1i(glGetUniformLocation(shaderProgram, "u_vertexQuality"), 1);
         
         // Pass season uniforms to the geometry shader
         glUniform1i(glGetUniformLocation(shaderProgram, "u_season"), environmentManager.getCurrentSeasonId());
@@ -289,6 +312,13 @@ public class AdvancedRenderingPipeline {
     }
     
     private void renderFinalComposition() {
+        System.out.println("Final composition: Rendering to screen");
+        // Save current OpenGL state
+        int previousProgram = glGetInteger(GL_CURRENT_PROGRAM);
+        int previousVAO = glGetInteger(GL_VERTEX_ARRAY_BINDING);
+        int previousTexture = glGetInteger(GL_TEXTURE_BINDING_2D);
+        int previousActiveTexture = glGetInteger(GL_ACTIVE_TEXTURE);
+        
         // Bind default framebuffer (screen)
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -305,13 +335,17 @@ public class AdvancedRenderingPipeline {
         // Render fullscreen quad
         glBindVertexArray(finalQuadVAO);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        glBindVertexArray(0);
+        
+        // Restore previous OpenGL state
+        glBindVertexArray(previousVAO);
+        glUseProgram(previousProgram);
+        glActiveTexture(previousActiveTexture);
+        glBindTexture(GL_TEXTURE_2D, previousTexture);
     }
     
     private void renderSceneGeometry() {
-        // Placeholder for rendering opaque geometry to G-Buffer
-        // This will be implemented when we integrate with the voxel system
-        // For now, just ensure the G-Buffer has valid data
+        // This method is now handled by renderGeometryPass()
+        // which properly renders all opaque objects to the G-Buffer
     }
     
     private void renderTransparentObjects() {
@@ -340,8 +374,14 @@ public class AdvancedRenderingPipeline {
     }
     
     public void setWetness(float wetness) {
+        // Save current shader program
+        int previousProgram = glGetInteger(GL_CURRENT_PROGRAM);
+        
         int shaderProgram = shaderPrograms.get("geometry");
         glUseProgram(shaderProgram);
         GL20.glUniform1f(GL20.glGetUniformLocation(shaderProgram, "u_wetness"), wetness);
+        
+        // Restore previous shader program
+        glUseProgram(previousProgram);
     }
 }

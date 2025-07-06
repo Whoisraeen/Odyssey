@@ -234,8 +234,8 @@ public class Button extends UIComponent {
         if (!text.isEmpty()) {
             updateTextStyle();
             
-            int textX = getLeft() + getWidth() / 2;
-            int textY = getTop() + getHeight() / 2;
+            int textX = (int)(getLeft() + getWidth() / 2);
+            int textY = (int)(getTop() + getHeight() / 2);
             
             // Note: In a real implementation, you'd use the actual TextRenderer
             // renderer.drawText(text, textX, textY, textStyle);
@@ -251,9 +251,7 @@ public class Button extends UIComponent {
         }
     }
     
-    @Override
     protected void onStateChanged() {
-        super.onStateChanged();
         invalidate(); // Redraw when state changes
     }
     
@@ -267,12 +265,12 @@ public class Button extends UIComponent {
     }
     
     @Override
-    public boolean onMouseClick(int mouseX, int mouseY, int button) {
+    public boolean onMouseClick(double mouseX, double mouseY, int button) {
         if (!isEnabled() || !isVisible()) {
             return false;
         }
         
-        if (contains(mouseX, mouseY)) {
+        if (contains((int)mouseX, (int)mouseY)) {
             // Request focus
             setFocused(true);
             

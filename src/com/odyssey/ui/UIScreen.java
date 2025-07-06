@@ -47,7 +47,7 @@ public abstract class UIScreen implements LifecycleOwner, ViewModelStoreOwner, O
      * Default constructor
      */
     public UIScreen() {
-        this.fragmentManager = new FragmentManager(this);
+        this.fragmentManager = new FragmentManager();
     }
     
     /**
@@ -65,7 +65,7 @@ public abstract class UIScreen implements LifecycleOwner, ViewModelStoreOwner, O
      */
     public void onCreate() {
         currentState = State.CREATED;
-        lifecycleOwner.getLifecycleRegistry().setCurrentState(Lifecycle.State.CREATED);
+        lifecycleOwner.markState(Lifecycle.State.CREATED);
         System.out.println("Screen onCreate: " + getClass().getSimpleName());
     }
     
@@ -87,7 +87,7 @@ public abstract class UIScreen implements LifecycleOwner, ViewModelStoreOwner, O
      */
     public void onStart() {
         currentState = State.STARTED;
-        lifecycleOwner.getLifecycleRegistry().setCurrentState(Lifecycle.State.STARTED);
+        lifecycleOwner.markState(Lifecycle.State.STARTED);
         visible = true;
         System.out.println("Screen onStart: " + getClass().getSimpleName());
     }
@@ -97,7 +97,7 @@ public abstract class UIScreen implements LifecycleOwner, ViewModelStoreOwner, O
      */
     public void onResume() {
         currentState = State.RESUMED;
-        lifecycleOwner.getLifecycleRegistry().setCurrentState(Lifecycle.State.RESUMED);
+        lifecycleOwner.markState(Lifecycle.State.RESUMED);
         System.out.println("Screen onResume: " + getClass().getSimpleName());
     }
     
@@ -106,7 +106,7 @@ public abstract class UIScreen implements LifecycleOwner, ViewModelStoreOwner, O
      */
     public void onPause() {
         currentState = State.PAUSED;
-        lifecycleOwner.getLifecycleRegistry().setCurrentState(Lifecycle.State.STARTED);
+        lifecycleOwner.markState(Lifecycle.State.STARTED);
         System.out.println("Screen onPause: " + getClass().getSimpleName());
     }
     
@@ -115,7 +115,7 @@ public abstract class UIScreen implements LifecycleOwner, ViewModelStoreOwner, O
      */
     public void onStop() {
         currentState = State.STOPPED;
-        lifecycleOwner.getLifecycleRegistry().setCurrentState(Lifecycle.State.CREATED);
+        lifecycleOwner.markState(Lifecycle.State.CREATED);
         visible = false;
         System.out.println("Screen onStop: " + getClass().getSimpleName());
     }
@@ -133,7 +133,7 @@ public abstract class UIScreen implements LifecycleOwner, ViewModelStoreOwner, O
      */
     public void onDestroy() {
         currentState = State.DESTROYED;
-        lifecycleOwner.getLifecycleRegistry().setCurrentState(Lifecycle.State.DESTROYED);
+        lifecycleOwner.markState(Lifecycle.State.DESTROYED);
         viewModelStore.clear();
         System.out.println("Screen onDestroy: " + getClass().getSimpleName());
     }
@@ -268,7 +268,7 @@ public abstract class UIScreen implements LifecycleOwner, ViewModelStoreOwner, O
     public void addFragment(Fragment fragment) {
         fragments.add(fragment);
         fragmentManager.beginTransaction()
-            .add(fragment)
+            .add(0, fragment)
             .commit();
     }
     
@@ -287,7 +287,7 @@ public abstract class UIScreen implements LifecycleOwner, ViewModelStoreOwner, O
      */
     public void replaceFragment(Fragment fragment) {
         fragmentManager.beginTransaction()
-            .replace(fragment)
+            .replace(0, fragment)
             .commit();
     }
     

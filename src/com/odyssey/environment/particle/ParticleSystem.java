@@ -57,6 +57,12 @@ public class ParticleSystem {
             return;
         }
 
+        // Save current OpenGL state
+        int previousProgram = glGetInteger(GL_CURRENT_PROGRAM);
+        int previousVAO = glGetInteger(GL_VERTEX_ARRAY_BINDING);
+        boolean blendEnabled = glIsEnabled(GL_BLEND);
+        boolean depthMask = glGetBoolean(GL_DEPTH_WRITEMASK);
+        
         glUseProgram(shaderProgram);
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), false, camera.getViewMatrix().get(new float[16]));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), false, camera.getProjectionMatrix().get(new float[16]));
@@ -82,9 +88,13 @@ public class ParticleSystem {
 
         glDrawArrays(GL_POINTS, 0, particles.size());
 
-        glDepthMask(true);
-        glDisable(GL_BLEND);
-        glBindVertexArray(0);
+        // Restore previous OpenGL state
+        glDepthMask(depthMask);
+        if (!blendEnabled) {
+            glDisable(GL_BLEND);
+        }
+        glBindVertexArray(previousVAO);
+        glUseProgram(previousProgram);
     }
 
     public void cleanup() {

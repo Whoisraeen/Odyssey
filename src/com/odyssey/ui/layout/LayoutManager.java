@@ -49,6 +49,18 @@ public abstract class LayoutManager {
             return margin(margin, margin, margin, margin);
         }
         
+        public LayoutParams setMargins(int left, int top, int right, int bottom) {
+            this.marginLeft = left;
+            this.marginTop = top;
+            this.marginRight = right;
+            this.marginBottom = bottom;
+            return this;
+        }
+        
+        public LayoutParams setMargins(int margin) {
+            return setMargins(margin, margin, margin, margin);
+        }
+        
         public LayoutParams padding(int left, int top, int right, int bottom) {
             this.paddingLeft = left;
             this.paddingTop = top;
@@ -129,11 +141,11 @@ public abstract class LayoutManager {
         LayoutParams lp = child.getLayoutParams();
         
         int childWidthMeasureSpec = getChildMeasureSpec(parentWidthMeasureSpec,
-                parent.getPaddingLeft() + parent.getPaddingRight() + lp.getTotalMarginHorizontal(),
+                (int)(parent.getPaddingLeft() + parent.getPaddingRight()) + lp.getTotalMarginHorizontal(),
                 lp.width);
         
         int childHeightMeasureSpec = getChildMeasureSpec(parentHeightMeasureSpec,
-                parent.getPaddingTop() + parent.getPaddingBottom() + lp.getTotalMarginVertical(),
+                (int)(parent.getPaddingTop() + parent.getPaddingBottom()) + lp.getTotalMarginVertical(),
                 lp.height);
         
         child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
@@ -250,21 +262,21 @@ public abstract class LayoutManager {
      * Get the content area of the parent (excluding padding)
      */
     protected void getContentBounds(int[] bounds) {
-        bounds[0] = parent.getPaddingLeft(); // left
-        bounds[1] = parent.getPaddingTop(); // top
-        bounds[2] = parent.getWidth() - parent.getPaddingRight(); // right
-        bounds[3] = parent.getHeight() - parent.getPaddingBottom(); // bottom
+        bounds[0] = (int)parent.getPaddingLeft(); // left
+        bounds[1] = (int)parent.getPaddingTop(); // top
+        bounds[2] = (int)(parent.getWidth() - parent.getPaddingRight()); // right
+        bounds[3] = (int)(parent.getHeight() - parent.getPaddingBottom()); // bottom
     }
     
     /**
      * Calculate available space for children
      */
     protected int getAvailableWidth() {
-        return parent.getWidth() - parent.getPaddingLeft() - parent.getPaddingRight();
+        return (int)(parent.getWidth() - parent.getPaddingLeft() - parent.getPaddingRight());
     }
     
     protected int getAvailableHeight() {
-        return parent.getHeight() - parent.getPaddingTop() - parent.getPaddingBottom();
+        return (int)(parent.getHeight() - parent.getPaddingTop() - parent.getPaddingBottom());
     }
     
     /**
