@@ -155,8 +155,7 @@ public class PostProcessing {
             renderFXAA();
         }
         
-        // 4. Final blit to screen
-        blitToScreen();
+        // Note: Final composition to screen is now handled by AdvancedRenderingPipeline
     }
     
     private void renderBloomExtraction(int colorTexture) {
@@ -253,21 +252,7 @@ public class PostProcessing {
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
     
-    private void blitToScreen() {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClear(GL_COLOR_BUFFER_BIT);
-        
-        // Use a simple passthrough shader to copy texture to screen
-        glUseProgram(toneMappingShader); // Reuse tone mapping shader for simple blit
-        
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, enableFXAA ? hdrColorBuffer : finalColorBuffer);
-        glUniform1i(glGetUniformLocation(toneMappingShader, "hdrBuffer"), 0);
-        glUniform1f(glGetUniformLocation(toneMappingShader, "exposure"), 1.0f);
-        
-        glBindVertexArray(quadVAO);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    }
+
     
     // Parameter setters
     public void setExposure(float exposure) {
@@ -288,6 +273,14 @@ public class PostProcessing {
     
     public void setFXAAEnabled(boolean enabled) {
         this.enableFXAA = enabled;
+    }
+    
+    /**
+     * Get the final processed image texture for rendering to screen
+     * @return The texture ID of the final processed image
+     */
+    public int getFinalImageTexture() {
+        return enableFXAA ? hdrColorBuffer : finalColorBuffer;
     }
     
     public void resize(int width, int height) {

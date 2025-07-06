@@ -274,7 +274,7 @@ public class Button extends UIComponent {
         
         if (contains(mouseX, mouseY)) {
             // Request focus
-            requestFocus();
+            setFocused(true);
             
             // Trigger click
             performClick();

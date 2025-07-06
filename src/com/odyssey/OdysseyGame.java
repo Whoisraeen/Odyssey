@@ -22,6 +22,8 @@ import java.nio.*;
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR;
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_DISABLED;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
@@ -45,6 +47,9 @@ public class OdysseyGame implements Runnable {
     // Mouse input tracking
     private boolean leftMousePressed = false;
     private double mouseX, mouseY;
+    private double lastMouseX, lastMouseY;
+    private boolean firstMouse = true;
+    private final float mouseSensitivity = 0.1f;
 
     public static void main(String[] args) {
         new OdysseyGame().run();
@@ -163,6 +168,13 @@ public class OdysseyGame implements Runnable {
                 voxelEngine.getCamera().setAspectRatio((float) w / h);
             }
         });
+        
+        // Set up mouse cursor position callback for camera rotation
+        glfwSetCursorPosCallback(window, (window, xpos, ypos) -> {
+            if (gameStateManager != null && gameStateManager.getCurrentState() == GameState.IN_GAME) {
+                handleMouseMovement(xpos, ypos);
+            }
+        });
 
         // Make the OpenGL context current
         glfwMakeContextCurrent(window);
@@ -178,6 +190,9 @@ public class OdysseyGame implements Runnable {
         // creates the GLCapabilities instance and makes the OpenGL
         // bindings available for use.
         GL.createCapabilities();
+        
+        // Capture the mouse cursor for camera rotation
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         // Enable OpenGL features
         glEnable(GL_DEPTH_TEST);
@@ -192,7 +207,7 @@ public class OdysseyGame implements Runnable {
         uiRenderer = new UIRenderer(width, height);
         System.out.println("DEBUG: UIRenderer created successfully");
         
-        gameStateManager = new GameStateManager(uiRenderer, soundManager);
+        gameStateManager = new GameStateManager(uiRenderer, soundManager, width, height);
         System.out.println("DEBUG: GameStateManager created successfully");
         
         // Initialize game components that will be used when entering game state
@@ -304,6 +319,26 @@ public class OdysseyGame implements Runnable {
         }
     }
 
+    private void handleMouseMovement(double xpos, double ypos) {
+        if (firstMouse) {
+            lastMouseX = xpos;
+            lastMouseY = ypos;
+            firstMouse = false;
+        }
+        
+        double xoffset = xpos - lastMouseX;
+        double yoffset = lastMouseY - ypos; // Reversed since y-coordinates go from bottom to top
+        lastMouseX = xpos;
+        lastMouseY = ypos;
+        
+        xoffset *= mouseSensitivity;
+        yoffset *= mouseSensitivity;
+        
+        if (camera != null) {
+            camera.rotate((float)xoffset, (float)yoffset);
+        }
+    }
+    
     private void handleInput(float deltaTime) {
         // Mouse input is handled by InputManager and VoxelEngine
 

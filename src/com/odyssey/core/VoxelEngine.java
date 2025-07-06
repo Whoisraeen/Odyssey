@@ -97,6 +97,7 @@ public class VoxelEngine {
         // Position camera at player location
         camera.setPosition(spawnLocation.x, spawnLocation.y + 1.7f, spawnLocation.z);
         camera.setPitch(-20.0f); // Look slightly downward to see terrain
+        camera.setYaw(45.0f); // Look towards positive X and Z direction where chunks are
         this.selectionBoxRenderer = new SelectionBoxRenderer();
         this.entityManager = new EntityManager();
         this.environmentManager = new EnvironmentManager(soundManager);
@@ -157,6 +158,9 @@ public class VoxelEngine {
             // camera.lookAt(shipPos); // This would require a lookAt method on Camera
         } else {
             player.update(deltaTime, this, inputManager);
+            // Update camera to follow player (first-person view)
+            Vector3f playerPos = player.getPosition();
+            camera.setPosition(playerPos.x, playerPos.y + 1.6f, playerPos.z); // Eye level height
         }
 
         // Pass EnvironmentManager to EntityManager

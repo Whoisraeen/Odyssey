@@ -23,9 +23,14 @@ public class GameStateManager {
     private String pendingWorldName = "New World";
     private long pendingWorldSeed = System.currentTimeMillis();
     
-    public GameStateManager(UIRenderer uiRenderer, SoundManager soundManager) {
+    private final int windowWidth;
+    private final int windowHeight;
+    
+    public GameStateManager(UIRenderer uiRenderer, SoundManager soundManager, int windowWidth, int windowHeight) {
         this.uiRenderer = uiRenderer;
         this.soundManager = soundManager;
+        this.windowWidth = windowWidth;
+        this.windowHeight = windowHeight;
         this.currentState = GameState.IN_GAME; // Temporarily bypass menu for testing
         
         initializeMenus();
@@ -47,7 +52,7 @@ public class GameStateManager {
             case IN_GAME:
                 if (voxelEngine == null) {
                     // Create new world
-                    voxelEngine = new VoxelEngine(soundManager);
+                    voxelEngine = new VoxelEngine(soundManager, windowWidth, windowHeight);
                     // TODO: Apply world name and seed
                 }
                 break;

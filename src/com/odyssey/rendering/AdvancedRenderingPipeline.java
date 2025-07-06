@@ -44,6 +44,9 @@ public class AdvancedRenderingPipeline {
     private final ShaderManager shaderManager;
     private final Map<String, Integer> shaderPrograms = new ConcurrentHashMap<>();
     
+    // Final composition quad for rendering to screen
+    private int finalQuadVAO, finalQuadVBO;
+    
     // Uniform Buffer Objects for efficient data transfer
     private final UniformBufferManager uniformBuffers;
     
@@ -69,6 +72,7 @@ public class AdvancedRenderingPipeline {
         this.uniformBuffers = new UniformBufferManager();
         this.profiler = new PerformanceProfiler();
         
+        setupFinalQuad();
         initializeShaders();
         initializeUniforms();
         
@@ -135,6 +139,11 @@ public class AdvancedRenderingPipeline {
                             cloudRenderer.getCloudTexture(),
                             gBuffer.getDepthTexture(),
                             lightningFlash);
+        profiler.endSection();
+        
+        // 9. Final composition - render to screen
+        profiler.startSection("Final Composition");
+        renderFinalComposition();
         profiler.endSection();
         
         profiler.endFrame();
@@ -224,9 +233,34 @@ public class AdvancedRenderingPipeline {
             "shaders/ssao.vert", "shaders/ssao.frag"));
         shaderPrograms.put("shadow", shaderManager.loadProgram(
             "shaders/shadow.vert", "shaders/shadow.frag"));
+        shaderPrograms.put("final_composite", shaderManager.loadProgram(
+            "shaders/final_composite.vert", "shaders/final_composite.frag"));
             
         // Pass the deferred lighting shader to the lighting system
         lightingSystem.setDeferredLightingShader(shaderPrograms.get("deferred_lighting"));
+    }
+    
+    private void setupFinalQuad() {
+        float[] quadVertices = {
+            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+             1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+             1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        };
+        
+        finalQuadVAO = glGenVertexArrays();
+        finalQuadVBO = glGenBuffers();
+        
+        glBindVertexArray(finalQuadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, finalQuadVBO);
+        glBufferData(GL_ARRAY_BUFFER, quadVertices, GL_STATIC_DRAW);
+        
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
+        
+        glBindVertexArray(0);
     }
     
     private void initializeUniforms() {
@@ -250,6 +284,26 @@ public class AdvancedRenderingPipeline {
         glViewport(0, 0, width, height);
     }
     
+    private void renderFinalComposition() {
+        // Bind default framebuffer (screen)
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+        
+        // Use final composition shader
+        int finalShader = shaderPrograms.get("final_composite");
+        glUseProgram(finalShader);
+        
+        // Bind the final processed image texture
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, postProcessing.getFinalImageTexture());
+        glUniform1i(glGetUniformLocation(finalShader, "finalImage"), 0);
+        
+        // Render fullscreen quad
+        glBindVertexArray(finalQuadVAO);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glBindVertexArray(0);
+    }
+    
     private void renderSceneGeometry() {
         // Placeholder for rendering opaque geometry to G-Buffer
         // This will be implemented when we integrate with the voxel system
@@ -271,6 +325,10 @@ public class AdvancedRenderingPipeline {
         cloudRenderer.cleanup();
         shaderManager.cleanup();
         uniformBuffers.cleanup();
+        
+        // Clean up final quad resources
+        glDeleteVertexArrays(finalQuadVAO);
+        glDeleteBuffers(finalQuadVBO);
         
         // Delete shader programs
         shaderPrograms.values().forEach(GL20::glDeleteProgram);
