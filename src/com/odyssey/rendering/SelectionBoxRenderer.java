@@ -23,7 +23,7 @@ public class SelectionBoxRenderer {
 
     public SelectionBoxRenderer() {
         ShaderManager shaderManager = new ShaderManager();
-        shaderProgram = shaderManager.loadProgram("shaders/selection.vert", "shaders/selection.frag");
+        shaderProgram = shaderManager.loadProgram("resources/shaders/selection.vert", "resources/shaders/selection.frag");
 
         modelLoc = glGetUniformLocation(shaderProgram, "model");
         viewLoc = glGetUniformLocation(shaderProgram, "view");

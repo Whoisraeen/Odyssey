@@ -80,6 +80,7 @@ public class VoxelEngine {
     private final Map<ChunkPosition, Chunk> chunks = new ConcurrentHashMap<>();
     private final Map<ChunkPosition, Future<ChunkMesh[]>> meshingFutures = new ConcurrentHashMap<>();
     private int chunkShaderProgram;
+    private boolean chunksChanged = true; // Flag to track when scene needs updating
     
     private Raycaster.RaycastResult selectedBlock;
     private final Random random = new Random();
@@ -121,7 +122,7 @@ public class VoxelEngine {
         scene.setupDefaultLighting();
 
         // Load shaders
-        this.chunkShaderProgram = shaderManager.loadProgram("shaders/geometry.vert", "shaders/geometry.frag");
+        this.chunkShaderProgram = shaderManager.loadProgram("resources/shaders/geometry.vert", "resources/shaders/geometry.frag");
 
         // Create and generate chunks around spawn location
         ChunkPosition spawnChunk = new ChunkPosition(
@@ -226,6 +227,7 @@ public class VoxelEngine {
                     Chunk chunk = chunks.get(entry.getKey());
                     if (chunk != null) {
                         chunk.uploadMeshToGPU(meshes[0], meshes[1]); // [0] is opaque, [1] is transparent
+                        chunksChanged = true; // Mark that chunks need scene update
                     }
                 } catch (Exception e) {
                     System.err.println("Error uploading mesh for chunk " + entry.getKey() + ": " + e.getMessage());
@@ -250,8 +252,11 @@ public class VoxelEngine {
         // Set wetness level in the rendering pipeline
         renderingPipeline.setWetness(environmentManager.getWetness());
         
-        // Update scene with current chunks
-        updateSceneWithChunks();
+        // Update scene with current chunks only when needed
+        if (chunksChanged) {
+            updateSceneWithChunks();
+            chunksChanged = false;
+        }
         
         // Update scene
         scene.update(0.016f); // Assuming 60 FPS
@@ -385,6 +390,7 @@ public class VoxelEngine {
             if (chunk.getVao() != 0) {
                  chunk.cleanup(); // Deletes old VAO
             }
+            chunksChanged = true; // Mark that chunks need scene update
         }
     }
     

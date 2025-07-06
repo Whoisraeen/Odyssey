@@ -29,7 +29,7 @@ public class UIRenderer {
         this.screenHeight = height;
         
         ShaderManager shaderManager = new ShaderManager();
-        this.shaderProgram = shaderManager.loadProgram("shaders/ui.vert", "shaders/ui.frag");
+        this.shaderProgram = shaderManager.loadProgram("resources/shaders/ui.vert", "resources/shaders/ui.frag");
         Matrix4f projection = new Matrix4f().ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
         ShaderManager.setUniform(shaderProgram, "projection", projection);
 

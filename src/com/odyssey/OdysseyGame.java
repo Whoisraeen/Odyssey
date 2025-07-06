@@ -202,6 +202,9 @@ public class OdysseyGame implements Runnable {
         // bindings available for use.
         GL.createCapabilities();
         
+        // Set initial viewport - critical for proper rendering
+        glViewport(0, 0, width, height);
+        
         // Capture the mouse cursor for camera rotation
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 

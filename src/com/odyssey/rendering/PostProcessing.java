@@ -155,14 +155,14 @@ public class PostProcessing {
         
         // Load actual shader programs using fullscreen vertex shader
         toneMappingShader = shaderManager.loadProgram(
-            "shaders/fullscreen.vert", "shaders/tone_mapping.frag");
+            "resources/shaders/fullscreen.vert", "resources/shaders/tone_mapping.frag");
         bloomExtractShader = shaderManager.loadProgram(
-            "shaders/fullscreen.vert", "shaders/bloom_extract.frag");
+            "resources/shaders/fullscreen.vert", "resources/shaders/bloom_extract.frag");
         bloomBlurShader = shaderManager.loadProgram(
-            "shaders/fullscreen.vert", "shaders/bloom_blur.frag");
+            "resources/shaders/fullscreen.vert", "resources/shaders/bloom_blur.frag");
         bloomCombineShader = toneMappingShader; // Reuse tone mapping for combine
         fxaaShader = shaderManager.loadProgram(
-            "shaders/fullscreen.vert", "shaders/fxaa.frag");
+            "resources/shaders/fullscreen.vert", "resources/shaders/fxaa.frag");
     }
     
     public void render(int colorTexture, int volumetricTexture, int cloudTexture, int depthTexture, float lightningFlash) {
@@ -264,12 +264,19 @@ public class PostProcessing {
     }
     
     private void renderFXAA() {
-        glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO); // Reuse HDR buffer for FXAA output
+        // Create a temporary buffer swap: render FXAA result back to finalFBO
+        // First, copy finalColorBuffer to hdrColorBuffer as input
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, finalFBO);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, hdrFBO);
+        glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        
+        // Now render FXAA from hdrColorBuffer back to finalFBO
+        glBindFramebuffer(GL_FRAMEBUFFER, finalFBO);
         glClear(GL_COLOR_BUFFER_BIT);
         
         glUseProgram(fxaaShader);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, finalColorBuffer);
+        glBindTexture(GL_TEXTURE_2D, hdrColorBuffer);
         glUniform1i(glGetUniformLocation(fxaaShader, "screenTexture"), 0);
         glUniform2f(glGetUniformLocation(fxaaShader, "texelSize"), 1.0f / width, 1.0f / height);
         
@@ -305,7 +312,9 @@ public class PostProcessing {
      * @return The texture ID of the final processed image
      */
     public int getFinalImageTexture() {
-        return enableFXAA ? hdrColorBuffer : finalColorBuffer;
+        // Always return finalColorBuffer as it contains the final processed result
+        // Whether FXAA is enabled or not, the final result is in finalColorBuffer
+        return finalColorBuffer;
     }
     
     /**

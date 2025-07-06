@@ -249,19 +249,19 @@ public class AdvancedRenderingPipeline {
     private void initializeShaders() {
         // Load and compile all shaders
         shaderPrograms.put("geometry", shaderManager.loadProgram(
-            "shaders/geometry.vert", "shaders/geometry.frag"));
+            "resources/shaders/geometry.vert", "resources/shaders/geometry.frag"));
         shaderPrograms.put("forward", shaderManager.loadProgram(
-            "shaders/forward.vert", "shaders/forward.frag"));
+            "resources/shaders/forward.vert", "resources/shaders/forward.frag"));
         shaderPrograms.put("deferred_lighting", shaderManager.loadProgram(
-            "shaders/deferred_lighting.vert", "shaders/deferred_lighting.frag"));
+            "resources/shaders/deferred_lighting.vert", "resources/shaders/deferred_lighting.frag"));
         shaderPrograms.put("volumetric", shaderManager.loadProgram(
-            "shaders/volumetric.vert", "shaders/volumetric.frag"));
+            "resources/shaders/volumetric.vert", "resources/shaders/volumetric.frag"));
         shaderPrograms.put("ssao", shaderManager.loadProgram(
-            "shaders/ssao.vert", "shaders/ssao.frag"));
+            "resources/shaders/ssao.vert", "resources/shaders/ssao.frag"));
         shaderPrograms.put("shadow", shaderManager.loadProgram(
-            "shaders/shadow.vert", "shaders/shadow.frag"));
+            "resources/shaders/shadow.vert", "resources/shaders/shadow.frag"));
         shaderPrograms.put("final_composite", shaderManager.loadProgram(
-            "shaders/final_composite.vert", "shaders/final_composite.frag"));
+            "resources/shaders/final_composite.vert", "resources/shaders/final_composite.frag"));
             
         // Pass the deferred lighting shader to the lighting system
         lightingSystem.setDeferredLightingShader(shaderPrograms.get("deferred_lighting"));
