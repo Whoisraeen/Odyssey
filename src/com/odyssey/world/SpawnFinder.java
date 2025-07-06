@@ -3,6 +3,8 @@ package com.odyssey.world;
 import com.odyssey.core.VoxelEngine;
 import org.joml.Vector3f;
 
+import static com.odyssey.core.GameConstants.MAX_HEIGHT;
+
 public class SpawnFinder {
     
     private static final int SEARCH_RADIUS = 32;
@@ -48,7 +50,7 @@ public class SpawnFinder {
             int terrainHeight = sampleTerrainHeight(worldGenerator, x, z);
             
             // Validate terrain height
-            if (terrainHeight < 0 || terrainHeight > VoxelEngine.CHUNK_HEIGHT) {
+            if (terrainHeight < 0 || terrainHeight > MAX_HEIGHT) {
                 System.err.println("Warning: Invalid terrain height: " + terrainHeight + " at (" + x + ", " + z + ")");
                 continue;
             }
@@ -126,7 +128,7 @@ public class SpawnFinder {
         }
         
         // Clamp height to valid range
-        height = Math.max(0, Math.min(height, VoxelEngine.CHUNK_HEIGHT - 1));
+        height = Math.max(0, Math.min(height, MAX_HEIGHT - 1));
         
         return height;
     }
@@ -212,7 +214,7 @@ public class SpawnFinder {
     private static BlockType getSurfaceBlockType(WorldGenerator worldGenerator, int x, int terrainHeight, int z) {
         // Replicate WorldGenerator surface block logic
         if (terrainHeight > SEA_LEVEL) {
-            if (terrainHeight < VoxelEngine.CHUNK_HEIGHT) {
+            if (terrainHeight < MAX_HEIGHT) {
                 // Check if it would be dirt (and thus have grass on top)
                 if (terrainHeight > 40 + 15 + 5 - 5) { // Approximate dirt layer check
                     return BlockType.GRASS;

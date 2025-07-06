@@ -3,8 +3,9 @@ package com.odyssey.ui;
 import com.odyssey.rendering.ui.TextRenderer;
 import com.odyssey.ui.graphics.CommandBuffer;
 import com.odyssey.ui.graphics.RenderContext;
-import com.odyssey.ui.graphics.ShaderManager;
+import com.odyssey.rendering.ShaderManager;
 import com.odyssey.ui.graphics.Surface;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
@@ -140,8 +141,8 @@ public class UIRenderer {
     
     private void initializeGraphics() {
         // Initialize graphics components
-        shaderManager = ShaderManager.getInstance();
-        shaderManager.initialize();
+        shaderManager = new ShaderManager();
+        // ShaderManager is initialized automatically in constructor
         
         renderContext = RenderContext.getInstance();
         renderContext.initialize();
@@ -401,12 +402,22 @@ public class UIRenderer {
         }
     }
     
+    public void drawText(String text, float x, float y, float scale, Vector3f color) {
+        if (textRenderer != null) {
+            textRenderer.drawText(text, x, y, scale, color);
+        }
+    }
+    
     public float getTextWidth(String text) {
         return textRenderer != null ? textRenderer.getTextWidth(text, 1.0f) : 0;
     }
     
     public float getTextHeight() {
         return textRenderer != null ? textRenderer.getTextHeight(1.0f) : 0;
+    }
+    
+    public boolean isTextRenderingAvailable() {
+        return textRenderer != null;
     }
     
     public void updateScreenSize(int width, int height) {

@@ -1,6 +1,7 @@
 package com.odyssey.physics;
 
 import com.odyssey.core.VoxelEngine;
+import com.odyssey.services.GameEngineService;
 import com.odyssey.world.BlockType;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
@@ -18,6 +19,14 @@ public class Raycaster {
     }
 
     public static RaycastResult cast(VoxelEngine world, Vector3f start, Vector3f direction, float maxDistance) {
+        return castInternal(world::getBlock, start, direction, maxDistance);
+    }
+    
+    public static RaycastResult cast(GameEngineService gameEngine, Vector3f start, Vector3f direction, float maxDistance) {
+        return castInternal(gameEngine::getBlock, start, direction, maxDistance);
+    }
+    
+    private static RaycastResult castInternal(BlockProvider blockProvider, Vector3f start, Vector3f direction, float maxDistance) {
         Vector3i blockPos = new Vector3i((int) Math.floor(start.x), (int) Math.floor(start.y), (int) Math.floor(start.z));
         Vector3f rayPos = new Vector3f(start);
         
@@ -53,7 +62,7 @@ public class Raycaster {
         Vector3i lastFace = new Vector3i();
 
         for (int i = 0; i < maxDistance * 2; i++) {
-            if (world.getBlock(blockPos.x, blockPos.y, blockPos.z) != BlockType.AIR) {
+            if (blockProvider.getBlock(blockPos.x, blockPos.y, blockPos.z) != BlockType.AIR) {
                 return new RaycastResult(blockPos, lastFace);
             }
 
@@ -82,4 +91,9 @@ public class Raycaster {
         
         return null;
     }
-} 
+    
+    @FunctionalInterface
+    private interface BlockProvider {
+        BlockType getBlock(int x, int y, int z);
+    }
+}

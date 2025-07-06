@@ -1,6 +1,6 @@
 package com.odyssey.ui;
 
-import com.odyssey.rendering.ui.UIRenderer;
+import com.odyssey.ui.UIRenderer;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
@@ -49,17 +49,27 @@ public class MainMenu {
     }
     
     public void render(int windowWidth, int windowHeight) {
+        System.out.println("DEBUG: MainMenu.render() called with window size: " + windowWidth + "x" + windowHeight);
+        System.out.println("DEBUG: UIRenderer text rendering available: " + uiRenderer.isTextRenderingAvailable());
+        
         // Draw title
         String title = "ODYSSEY";
-        float titleX = (windowWidth - title.length() * 24) / 2; // Rough centering for larger text
-        uiRenderer.drawText(title, titleX, 150, 3.0f, new Vector3f(1.0f, 1.0f, 1.0f));
+        float titleX = (windowWidth - title.length() * 24) / 2.0f; // Rough centering for larger text
+        System.out.println("DEBUG: Drawing title '" + title + "' at (" + titleX + ", 150)");
+        uiRenderer.drawText(title, titleX, 150.0f, 3.0f, new Vector3f(1.0f, 1.0f, 1.0f));
         
         // Draw subtitle
         String subtitle = "Voxel Adventure Game";
-        float subtitleX = (windowWidth - subtitle.length() * 8) / 2;
-        uiRenderer.drawText(subtitle, subtitleX, 200, 1.0f, new Vector3f(0.8f, 0.8f, 0.8f));
+        float subtitleX = (windowWidth - subtitle.length() * 8) / 2.0f;
+        System.out.println("DEBUG: Drawing subtitle '" + subtitle + "' at (" + subtitleX + ", 200)");
+        uiRenderer.drawText(subtitle, subtitleX, 200.0f, 1.0f, new Vector3f(0.8f, 0.8f, 0.8f));
+        
+        // Draw a test bright red rectangle to verify basic rendering
+        System.out.println("DEBUG: Drawing test rectangle");
+        uiRenderer.drawRect(100, 100, 200, 50, 0xFF0000); // Bright red rectangle
         
         // Render buttons
+        System.out.println("DEBUG: Rendering " + buttons.size() + " buttons");
         for (MenuButton button : buttons) {
             button.render(uiRenderer);
         }
@@ -82,8 +92,7 @@ public class MainMenu {
     
     public void handleKeyInput(int key, int action) {
         // Handle keyboard navigation if needed
-        if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_PRESS) {
-            System.exit(0);
-        }
+        // ESC key handling removed to prevent accidental game exit
+        System.out.println("DEBUG: Key pressed: " + key + ", action: " + action);
     }
 }

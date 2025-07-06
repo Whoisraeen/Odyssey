@@ -54,7 +54,27 @@ public class Player {
         applyGravity(deltaTime, engine);
         checkEnvironmentDamage(engine);
     }
+    
+    public void update(float deltaTime, VoxelEngine engine, InputManager inputManager, com.odyssey.audio.GameSoundManager gameSoundManager) {
+        handleMovement(deltaTime, engine, inputManager, gameSoundManager);
+        applyGravity(deltaTime, engine);
+        checkEnvironmentDamage(engine);
+    }
 
+    private void handleMovement(float deltaTime, VoxelEngine engine, InputManager inputManager, com.odyssey.audio.GameSoundManager gameSoundManager) {
+        boolean wasMoving = velocity.x != 0 || velocity.z != 0;
+        
+        handleMovement(deltaTime, engine, inputManager);
+        
+        // Play footstep sounds when moving and on ground
+        boolean isMoving = velocity.x != 0 || velocity.z != 0;
+        if (isMoving && onGround && !wasMoving) {
+            // Player just started moving
+            BlockType blockBelow = engine.getBlock((int)Math.floor(position.x), (int)Math.floor(position.y - 0.1), (int)Math.floor(position.z));
+            gameSoundManager.playFootstepSound(blockBelow, new org.joml.Vector3f(position.x, position.y, position.z));
+        }
+    }
+    
     private void handleMovement(float deltaTime, VoxelEngine engine, InputManager inputManager) {
         float currentSpeed = speed;
 

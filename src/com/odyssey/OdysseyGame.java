@@ -7,11 +7,12 @@ import com.odyssey.input.InputManager;
 import org.joml.Vector2f;
 import com.odyssey.player.Player;
 import com.odyssey.rendering.Camera;
-import com.odyssey.rendering.ui.Crosshair;
 import com.odyssey.rendering.ui.Hotbar;
+import com.odyssey.rendering.ui.Crosshair;
 import com.odyssey.rendering.ui.FontManager;
 import com.odyssey.rendering.ui.TextRenderer;
-import com.odyssey.rendering.ui.UIRenderer;
+
+import com.odyssey.ui.UIRenderer;
 import com.odyssey.ui.GameState;
 import com.odyssey.ui.GameStateManager;
 import org.joml.Vector3f;
@@ -24,8 +25,21 @@ import java.nio.*;
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.glfw.GLFW.GLFW_CURSOR;
-import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_DISABLED;
+import static org.lwjgl.opengl.GL12.*;
+import static org.lwjgl.opengl.GL13.*;
+import static org.lwjgl.opengl.GL14.*;
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL31.*;
+import static org.lwjgl.opengl.GL32.*;
+import static org.lwjgl.opengl.GL33.*;
+import static org.lwjgl.opengl.GL40.*;
+import static org.lwjgl.opengl.GL41.*;
+import static org.lwjgl.opengl.GL42.*;
+import static org.lwjgl.opengl.GL43.*;
+import static org.lwjgl.opengl.GL44.*;
+import static org.lwjgl.opengl.GL45.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.opengl.GL11.GL_NO_ERROR;
@@ -35,13 +49,23 @@ import static org.lwjgl.opengl.GL11.GL_INVALID_OPERATION;
 import static org.lwjgl.opengl.GL11.GL_OUT_OF_MEMORY;
 
 import com.odyssey.audio.SoundManager;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@SpringBootApplication
+@Component
 public class OdysseyGame implements Runnable {
     private long window;
     private int width = 1280;
     private int height = 720;
     private GameStateManager gameStateManager;
+    
+    @Autowired
     private VoxelEngine voxelEngine;
+    
     private Camera camera;
     private double lastFrameTime;
     private InputManager inputManager;
@@ -49,6 +73,8 @@ public class OdysseyGame implements Runnable {
     private Crosshair crosshair;
     private Hotbar hotbar;
     private SoundManager soundManager;
+    
+    private static ApplicationContext applicationContext;
     
     // Mouse input tracking
     private boolean leftMousePressed = false;
@@ -58,7 +84,12 @@ public class OdysseyGame implements Runnable {
     private final float mouseSensitivity = 0.1f;
 
     public static void main(String[] args) {
-        new OdysseyGame().run();
+        // Start Spring Boot application
+        applicationContext = SpringApplication.run(OdysseyGame.class, args);
+        
+        // Get the OdysseyGame bean and run it
+        OdysseyGame game = applicationContext.getBean(OdysseyGame.class);
+        game.run();
     }
 
     @Override
@@ -228,7 +259,9 @@ public class OdysseyGame implements Runnable {
         // Initialize UI renderer
         try {
             System.out.println("DEBUG: Creating UIRenderer...");
-            uiRenderer = new UIRenderer(width, height);
+            FontManager fontManager = FontManager.getInstance();
+            TextRenderer textRenderer = fontManager.createTextRenderer(width, height);
+            uiRenderer = new UIRenderer(textRenderer);
             System.out.println("DEBUG: UIRenderer created successfully");
         } catch (Exception e) {
             System.err.println("ERROR: Failed to initialize UI renderer: " + e.getMessage());
@@ -270,8 +303,8 @@ public class OdysseyGame implements Runnable {
             
             if (currentState == GameState.IN_GAME) {
                 // Initialize VoxelEngine if entering game for first time
-                if (voxelEngine == null) {
-                    voxelEngine = new VoxelEngine(soundManager, width, height);
+                if (camera == null) {
+                    voxelEngine.initialize(width, height, soundManager);
                     camera = voxelEngine.getCamera();
                     gameStateManager.setVoxelEngine(voxelEngine);
                 }
@@ -302,7 +335,7 @@ public class OdysseyGame implements Runnable {
                 
                 // Draw health
                 String healthText = "Health: " + (int)voxelEngine.getPlayer().getHealth();
-                uiRenderer.drawText(healthText, 20, 20, 1.0f, new Vector3f(1.0f, 1.0f, 1.0f)); // White color
+                uiRenderer.drawText(healthText, 20.0f, 20.0f, 1.0f, new Vector3f(1.0f, 1.0f, 1.0f)); // White color
                 
                 glDisable(GL_BLEND);
                 glEnable(GL_DEPTH_TEST);

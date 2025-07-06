@@ -1,6 +1,7 @@
 package com.odyssey.rendering.ui;
 
 import com.odyssey.rendering.Texture;
+import com.odyssey.ui.UIRenderer;
 import org.joml.Vector3f;
 
 public class Crosshair {
@@ -17,11 +18,11 @@ public class Crosshair {
     public void render(int windowWidth, int windowHeight) {
         float x = (windowWidth / 2f) - (CROSSHAIR_SIZE / 2f);
         float y = (windowHeight / 2f) - (CROSSHAIR_SIZE / 2f);
-        uiRenderer.draw(crosshairTexture, x, y, CROSSHAIR_SIZE, CROSSHAIR_SIZE, 0, new Vector3f(1, 1, 1));
+        uiRenderer.drawRect(x, y, CROSSHAIR_SIZE, CROSSHAIR_SIZE, 0xFFFFFFFF); // White crosshair
     }
 
     public void cleanup() {
         // Texture cleanup should be managed by a larger asset manager,
         // but for now we can do it here if needed.
     }
-} 
+}

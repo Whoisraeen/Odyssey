@@ -35,7 +35,7 @@ public class FontManager {
         // Load the main bitmap font atlas
         try {
             BitmapFont mainFont = new BitmapFont(
-                "resources/assets/textures/font_atlas.png", 
+                "assets/textures/font_atlas.png", 
                 256, 96,  // Atlas dimensions
                 16,       // Line height
                 12        // Baseline

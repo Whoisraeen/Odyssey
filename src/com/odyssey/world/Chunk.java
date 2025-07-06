@@ -6,8 +6,8 @@ import org.joml.Vector3i;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.odyssey.core.VoxelEngine.CHUNK_HEIGHT;
-import static com.odyssey.core.VoxelEngine.CHUNK_SIZE;
+import static com.odyssey.core.GameConstants.CHUNK_SIZE;
+import static com.odyssey.core.GameConstants.MAX_HEIGHT;
 import static org.lwjgl.opengl.GL45.*;
 import org.lwjgl.system.MemoryUtil;
 import java.nio.FloatBuffer;
@@ -35,7 +35,7 @@ public class Chunk {
     // Mesh data
     private volatile ChunkMesh mesh;
     
-    private final BlockType[] blocks = new BlockType[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE];
+    private final BlockType[] blocks = new BlockType[CHUNK_SIZE * MAX_HEIGHT * CHUNK_SIZE];
     private final Biome[] biomes = new Biome[CHUNK_SIZE * CHUNK_SIZE];
     private ChunkMesh[] meshes;
     private boolean needsRemeshing = true;
@@ -43,11 +43,11 @@ public class Chunk {
     public Chunk(ChunkPosition position) {
         this.position = position;
         this.palette = new BlockPalette();
-        this.blockData = new byte[CHUNK_SIZE * CHUNK_SIZE * CHUNK_HEIGHT];
+        this.blockData = new byte[CHUNK_SIZE * CHUNK_SIZE * MAX_HEIGHT];
     }
     
     public void setBlock(int x, int y, int z, BlockType block) {
-        if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_HEIGHT || z < 0 || z >= CHUNK_SIZE) {
+        if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= MAX_HEIGHT || z < 0 || z >= CHUNK_SIZE) {
             return;
         }
         
@@ -58,7 +58,7 @@ public class Chunk {
     }
     
     public BlockType getBlock(int x, int y, int z) {
-        if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_HEIGHT || z < 0 || z >= CHUNK_SIZE) {
+        if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= MAX_HEIGHT || z < 0 || z >= CHUNK_SIZE) {
             return BlockType.AIR;
         }
         
@@ -69,6 +69,11 @@ public class Chunk {
     
     public boolean isMeshDirty() {
         return meshDirty.get();
+    }
+    
+    public void markForRebuild() {
+        meshDirty.set(true);
+        needsRemeshing = true;
     }
     
     public void setMesh(ChunkMesh mesh) {
@@ -177,7 +182,7 @@ public class Chunk {
      */
     public BlockType getBlockInChunk(int x, int y, int z) {
         if (x < 0 || x >= CHUNK_SIZE ||
-            y < 0 || y >= CHUNK_HEIGHT ||
+            y < 0 || y >= MAX_HEIGHT ||
             z < 0 || z >= CHUNK_SIZE) {
             return BlockType.AIR;
         }

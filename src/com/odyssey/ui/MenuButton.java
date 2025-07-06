@@ -1,6 +1,6 @@
 package com.odyssey.ui;
 
-import com.odyssey.rendering.ui.UIRenderer;
+import com.odyssey.ui.UIRenderer;
 import org.joml.Vector3f;
 
 public class MenuButton {

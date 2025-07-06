@@ -1,0 +1,67 @@
+<svg width="256" height="256" xmlns="http://www.w3.org/2000/svg">
+  <!-- 16x16 texture atlas for blocks -->
+  
+  <!-- Row 0: Grass (0), Dirt (1), Stone (2), Cobblestone (3) -->
+  <rect x="0" y="0" width="16" height="16" fill="#7CB342"/> <!-- Grass top -->
+  <rect x="16" y="0" width="16" height="16" fill="#8D6E63"/> <!-- Dirt -->
+  <rect x="32" y="0" width="16" height="16" fill="#757575"/> <!-- Stone -->
+  <rect x="48" y="0" width="16" height="16" fill="#616161"/> <!-- Cobblestone -->
+  
+  <!-- Row 1: Sand (16), Water (17), Wood (18), Leaves (19) -->
+  <rect x="0" y="16" width="16" height="16" fill="#F4E4BC"/> <!-- Sand -->
+  <rect x="16" y="16" width="16" height="16" fill="#2196F3"/> <!-- Water -->
+  <rect x="32" y="16" width="16" height="16" fill="#8D6E63"/> <!-- Wood -->
+  <rect x="48" y="16" width="16" height="16" fill="#4CAF50"/> <!-- Leaves -->
+  
+  <!-- Row 2: Grass side (32), Wood top (33), Snow (34), Farmland (35) -->
+  <rect x="0" y="32" width="16" height="16" fill="#689F38"/> <!-- Grass side -->
+  <rect x="16" y="32" width="16" height="16" fill="#A1887F"/> <!-- Wood top -->
+  <rect x="32" y="32" width="16" height="16" fill="#FAFAFA"/> <!-- Snow -->
+  <rect x="48" y="32" width="16" height="16" fill="#6D4C41"/> <!-- Farmland -->
+  
+  <!-- Row 3: Wheat stages (48-51) -->
+  <rect x="0" y="48" width="16" height="16" fill="#8BC34A"/> <!-- Wheat 0 -->
+  <rect x="16" y="48" width="16" height="16" fill="#9CCC65"/> <!-- Wheat 1 -->
+  <rect x="32" y="48" width="16" height="16" fill="#AED581"/> <!-- Wheat 2 -->
+  <rect x="48" y="48" width="16" height="16" fill="#C5E1A5"/> <!-- Wheat 3 -->
+  
+  <!-- Row 4: More wheat stages and fire (64-67) -->
+  <rect x="0" y="64" width="16" height="16" fill="#DCEDC8"/> <!-- Wheat 4 -->
+  <rect x="16" y="64" width="16" height="16" fill="#F1F8E9"/> <!-- Wheat 5 -->
+  <rect x="32" y="64" width="16" height="16" fill="#FFEB3B"/> <!-- Wheat 6 -->
+  <rect x="48" y="64" width="16" height="16" fill="#FFC107"/> <!-- Wheat 7 -->
+  
+  <!-- Row 5: Fire and helm (80-83) -->
+  <rect x="0" y="80" width="16" height="16" fill="#FF5722"/> <!-- Fire -->
+  <rect x="16" y="80" width="16" height="16" fill="#795548"/> <!-- Helm -->
+  <rect x="32" y="80" width="16" height="16" fill="#424242"/> <!-- Reserved -->
+  <rect x="48" y="80" width="16" height="16" fill="#424242"/> <!-- Reserved -->
+  
+  <!-- Add simple patterns to make textures more distinct -->
+  <!-- Grass texture pattern -->
+  <circle cx="8" cy="8" r="2" fill="#558B2F"/>
+  <circle cx="4" cy="12" r="1" fill="#33691E"/>
+  <circle cx="12" cy="4" r="1" fill="#33691E"/>
+  
+  <!-- Stone texture pattern -->
+  <circle cx="40" cy="8" r="1" fill="#424242"/>
+  <circle cx="36" cy="12" r="1" fill="#616161"/>
+  <circle cx="44" cy="4" r="1" fill="#424242"/>
+  
+  <!-- Cobblestone texture pattern -->
+  <rect x="50" y="2" width="2" height="2" fill="#424242"/>
+  <rect x="54" y="6" width="2" height="2" fill="#424242"/>
+  <rect x="58" y="10" width="2" height="2" fill="#424242"/>
+  
+  <!-- Water animation pattern -->
+  <path d="M18 18 Q24 20 30 18 Q24 16 18 18" fill="#1976D2" opacity="0.5"/>
+  
+  <!-- Wood grain pattern -->
+  <line x1="34" y1="16" x2="46" y2="32" stroke="#5D4037" stroke-width="0.5"/>
+  <line x1="36" y1="16" x2="48" y2="32" stroke="#5D4037" stroke-width="0.5"/>
+  
+  <!-- Leaves texture -->
+  <circle cx="52" cy="20" r="1" fill="#2E7D32"/>
+  <circle cx="56" cy="24" r="1" fill="#2E7D32"/>
+  <circle cx="60" cy="28" r="1" fill="#2E7D32"/>
+</svg>

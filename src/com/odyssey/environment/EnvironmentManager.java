@@ -3,7 +3,7 @@ package com.odyssey.environment;
 import com.odyssey.audio.SoundManager;
 import com.odyssey.audio.WeatherAudioPlayer;
 import com.odyssey.core.VoxelEngine;
-import com.odyssey.environment.particle.ParticleSystem;
+import com.odyssey.effects.ParticleSystem;
 import com.odyssey.player.Player;
 import com.odyssey.world.BlockType;
 import com.odyssey.world.biome.Biome;
@@ -45,9 +45,9 @@ public class EnvironmentManager {
 
     private final WeatherAudioPlayer weatherAudioPlayer;
 
-    public EnvironmentManager(SoundManager soundManager) {
+    public EnvironmentManager(SoundManager soundManager, VoxelEngine voxelEngine) {
         this.worldClock = new WorldClock();
-        this.particleSystem = new ParticleSystem(10000); // Max 10,000 particles
+        this.particleSystem = new ParticleSystem(voxelEngine);
         this.weatherAudioPlayer = new WeatherAudioPlayer(soundManager, this);
         setNextWeatherChangeTime();
         setNextWindChangeTime();
@@ -233,7 +233,7 @@ public class EnvironmentManager {
             int strikeZ = (int)playerPos.z + random.nextInt(128) - 64;
             
             // Find highest block
-            for (int y = VoxelEngine.CHUNK_HEIGHT - 1; y > 0; y--) {
+            for (int y = com.odyssey.core.GameConstants.MAX_HEIGHT - 1; y > 0; y--) {
                 BlockType block = engine.getBlock(strikeX, y, strikeZ);
                 if (block != BlockType.AIR && !block.isTransparent()) {
                     int impactY = y + 1;
@@ -311,7 +311,7 @@ public class EnvironmentManager {
     }
 
     public void cleanup() {
-        particleSystem.cleanup();
+        particleSystem.clear();
     }
 
     public float getCropGrowthChance() {
@@ -359,4 +359,4 @@ public class EnvironmentManager {
     public float getSeasonTransition() {
         return seasonTransition;
     }
-} 
+}

@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.*;
 
-import static com.odyssey.core.VoxelEngine.*;
+import static com.odyssey.core.GameConstants.*;
 
 /**
  * Advanced Chunk Management with memory optimization
@@ -106,6 +106,12 @@ public class ChunkManager {
     
     public Collection<Chunk> getVisibleChunks() {
         return loadedChunks.values();
+    }
+    
+    public Chunk getChunk(int x, int z) {
+        // Assuming y=0 for 2D chunk coordinates
+        ChunkPosition pos = new ChunkPosition(x, 0, z);
+        return loadedChunks.get(pos);
     }
     
     public void cleanup() {

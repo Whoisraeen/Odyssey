@@ -1,6 +1,6 @@
 package com.odyssey.ui;
 
-import com.odyssey.rendering.ui.UIRenderer;
+import com.odyssey.ui.UIRenderer;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
@@ -61,17 +61,17 @@ public class WorldCreationMenu {
         
         // Draw title
         String title = "Create New World";
-        float titleX = (windowWidth - title.length() * 16) / 2;
-        uiRenderer.drawText(title, titleX, 150, 2.0f, new Vector3f(1.0f, 1.0f, 1.0f));
+        float titleX = (windowWidth - title.length() * 16) / 2.0f;
+        uiRenderer.drawText(title, titleX, 150.0f, 2.0f, new Vector3f(1.0f, 1.0f, 1.0f));
         
         // World Name input
-        uiRenderer.drawText("World Name:", centerX - INPUT_WIDTH/2, 250, 1.0f, new Vector3f(1.0f, 1.0f, 1.0f));
-        drawInputField(centerX - INPUT_WIDTH/2, 280, INPUT_WIDTH, INPUT_HEIGHT, worldName, editingWorldName);
+        uiRenderer.drawText("World Name:", centerX - INPUT_WIDTH/2, 250.0f, 1.0f, new Vector3f(1.0f, 1.0f, 1.0f));
+        drawInputField(centerX - INPUT_WIDTH/2, 280.0f, INPUT_WIDTH, INPUT_HEIGHT, worldName, editingWorldName);
         
         // Seed input
-        uiRenderer.drawText("Seed (optional):", centerX - INPUT_WIDTH/2, 330, 1.0f, new Vector3f(1.0f, 1.0f, 1.0f));
+        uiRenderer.drawText("Seed (optional):", centerX - INPUT_WIDTH/2, 330.0f, 1.0f, new Vector3f(1.0f, 1.0f, 1.0f));
         String seedDisplay = seedInput.isEmpty() ? "Random" : seedInput;
-        drawInputField(centerX - INPUT_WIDTH/2, 360, INPUT_WIDTH, INPUT_HEIGHT, seedDisplay, editingSeed);
+        drawInputField(centerX - INPUT_WIDTH/2, 360.0f, INPUT_WIDTH, INPUT_HEIGHT, seedDisplay, editingSeed);
         
         // Render buttons
         for (MenuButton button : buttons) {
@@ -86,12 +86,12 @@ public class WorldCreationMenu {
         
         // Draw text
         Vector3f textColor = new Vector3f(1.0f, 1.0f, 1.0f);
-        uiRenderer.drawText(text, x + 5, y + 5, 1.0f, textColor);
+        uiRenderer.drawText(text, x + 5.0f, y + 5.0f, 1.0f, textColor);
         
         // Draw cursor if active
         if (active) {
-            float cursorX = x + 5 + text.length() * 8; // Rough character width
-            uiRenderer.drawText("|", cursorX, y + 5, 1.0f, new Vector3f(1.0f, 1.0f, 1.0f));
+            float cursorX = x + 5.0f + text.length() * 8.0f; // Rough character width
+            uiRenderer.drawText("|", cursorX, y + 5.0f, 1.0f, new Vector3f(1.0f, 1.0f, 1.0f));
         }
     }
     
@@ -102,13 +102,13 @@ public class WorldCreationMenu {
         if (leftClick) {
             // World name field
             if (mouseX >= centerX - INPUT_WIDTH/2 && mouseX <= centerX + INPUT_WIDTH/2 &&
-                mouseY >= 280 && mouseY <= 280 + INPUT_HEIGHT) {
+                mouseY >= 280.0f && mouseY <= 280.0f + INPUT_HEIGHT) {
                 editingWorldName = true;
                 editingSeed = false;
             }
             // Seed field
             else if (mouseX >= centerX - INPUT_WIDTH/2 && mouseX <= centerX + INPUT_WIDTH/2 &&
-                     mouseY >= 360 && mouseY <= 360 + INPUT_HEIGHT) {
+                     mouseY >= 360.0f && mouseY <= 360.0f + INPUT_HEIGHT) {
                 editingSeed = true;
                 editingWorldName = false;
             }

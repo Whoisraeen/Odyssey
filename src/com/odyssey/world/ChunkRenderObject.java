@@ -7,7 +7,7 @@ import com.odyssey.rendering.Texture;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-import static com.odyssey.core.VoxelEngine.CHUNK_SIZE;
+import static com.odyssey.core.GameConstants.CHUNK_SIZE;
 import static org.lwjgl.opengl.GL45.*;
 
 /**
@@ -26,12 +26,17 @@ public class ChunkRenderObject extends RenderObject {
         this.chunkMesh = (ChunkMesh) getMesh();
         
         // Set position based on chunk coordinates
-        Vector3f chunkWorldPos = new Vector3f(
-            chunk.getPosition().x * CHUNK_SIZE,
-            0,
-            chunk.getPosition().z * CHUNK_SIZE
-        );
-        setPosition(chunkWorldPos);
+        if (chunk != null && chunk.getPosition() != null) {
+            Vector3f chunkWorldPos = new Vector3f(
+                chunk.getPosition().x * CHUNK_SIZE,
+                0,
+                chunk.getPosition().z * CHUNK_SIZE
+            );
+            setPosition(chunkWorldPos);
+        } else {
+            System.err.println("ERROR: ChunkRenderObject created with null chunk or null chunk position!");
+            setPosition(new Vector3f(0, 0, 0));
+        }
     }
     
     /**
@@ -45,7 +50,7 @@ public class ChunkRenderObject extends RenderObject {
                 if (terrainTexture == 0) {
                     System.err.println("CRITICAL ERROR: Failed to load terrain texture - chunks will be invisible!");
                     // Try fallback texture path
-                    terrainTexture = Texture.loadTexture("resources/assets/textures/terrain.png");
+                    terrainTexture = Texture.loadTexture("assets/textures/terrain.png");
                     if (terrainTexture == 0) {
                         System.err.println("CRITICAL ERROR: Fallback terrain texture also failed to load!");
                     } else {
@@ -62,6 +67,10 @@ public class ChunkRenderObject extends RenderObject {
         
         // Create material with terrain texture
         Material material = Material.createDielectric(new Vector3f(1.0f, 1.0f, 1.0f), 0.8f);
+        if (material == null) {
+            System.err.println("ERROR: Failed to create dielectric material!");
+            material = new Material(); // Fallback to default material
+        }
         material.setAlbedoTexture(terrainTexture);
         return material;
     }
@@ -75,6 +84,10 @@ public class ChunkRenderObject extends RenderObject {
         private final Chunk chunk;
         
         public ChunkMesh(Chunk chunk) {
+            if (chunk == null) {
+                System.err.println("ERROR: ChunkMesh created with null chunk!");
+                throw new IllegalArgumentException("Chunk cannot be null");
+            }
             this.chunk = chunk;
         }
         

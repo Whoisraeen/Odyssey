@@ -135,4 +135,15 @@ public class SimplexNoise {
     private static double dot(int[] g, double x, double y) {
         return g[0] * x + g[1] * y;
     }
+    
+    // 3D simplex noise - simplified version using multiple 2D calls
+    public double eval(double x, double y, double z) {
+        // Combine multiple 2D noise calls to simulate 3D noise
+        double xy = eval(x, y);
+        double xz = eval(x, z);
+        double yz = eval(y, z);
+        
+        // Blend the results
+        return (xy + xz + yz) / 3.0;
+    }
 }

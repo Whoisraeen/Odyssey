@@ -17,6 +17,10 @@ import static org.lwjgl.stb.STBVorbis.stb_vorbis_decode_filename;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.libc.LibCStdlib.free;
 
+import org.joml.Vector3f;
+import java.util.HashMap;
+import java.util.Map;
+
 public class SoundManager {
 
     private long device;
@@ -24,6 +28,12 @@ public class SoundManager {
 
     private final List<Integer> buffers = new ArrayList<>();
     private final List<Integer> sources = new ArrayList<>();
+    private final Map<String, Integer> soundBuffers = new HashMap<>();
+    
+    // Volume controls
+    private float masterVolume = 1.0f;
+    private float sfxVolume = 1.0f;
+    private float ambientVolume = 1.0f;
 
     public void init() {
         device = alcOpenDevice((CharSequence) null);
@@ -97,6 +107,51 @@ public class SoundManager {
     public void setVolume(int source, float volume) {
         alSourcef(source, AL_GAIN, volume);
     }
+    
+    public void playSound3D(String soundName, Vector3f position, float volume, float pitch) {
+        Integer buffer = soundBuffers.get(soundName);
+        if (buffer == null || !isValidBuffer(buffer)) {
+            // Sound not loaded, fail silently
+            return;
+        }
+        
+        int source = createSource(false);
+        alSourcei(source, AL_BUFFER, buffer);
+        alSource3f(source, AL_POSITION, position.x, position.y, position.z);
+        alSourcef(source, AL_GAIN, volume * sfxVolume * masterVolume);
+        alSourcef(source, AL_PITCH, pitch);
+        alSourcePlay(source);
+    }
+    
+    public void playSound2D(String soundName, float volume, float pitch) {
+        Integer buffer = soundBuffers.get(soundName);
+        if (buffer == null || !isValidBuffer(buffer)) {
+            // Sound not loaded, fail silently
+            return;
+        }
+        
+        int source = createSource(false);
+        alSourcei(source, AL_BUFFER, buffer);
+        alSourcef(source, AL_GAIN, volume * sfxVolume * masterVolume);
+        alSourcef(source, AL_PITCH, pitch);
+        alSourcePlay(source);
+    }
+    
+    public void setMasterVolume(float volume) {
+        this.masterVolume = Math.max(0.0f, Math.min(1.0f, volume));
+    }
+    
+    public void setSFXVolume(float volume) {
+        this.sfxVolume = Math.max(0.0f, Math.min(1.0f, volume));
+    }
+    
+    public void setAmbientVolume(float volume) {
+        this.ambientVolume = Math.max(0.0f, Math.min(1.0f, volume));
+    }
+    
+    public void registerSound(String soundName, int buffer) {
+        soundBuffers.put(soundName, buffer);
+    }
 
     public void cleanup() {
         for (int source : sources) {
@@ -112,4 +167,4 @@ public class SoundManager {
             alcCloseDevice(device);
         }
     }
-} 
+}

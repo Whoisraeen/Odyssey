@@ -1,6 +1,6 @@
 package com.odyssey.ui;
 
-import com.odyssey.rendering.ui.UIRenderer;
+import com.odyssey.ui.UIRenderer;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
@@ -57,8 +57,8 @@ public class PauseMenu {
         
         // Draw title
         String title = "PAUSED";
-        float titleX = (windowWidth - title.length() * 16) / 2; // Rough centering
-        uiRenderer.drawText(title, titleX, 200, 2.0f, new Vector3f(1.0f, 1.0f, 1.0f));
+        float titleX = (windowWidth - title.length() * 16) / 2.0f; // Rough centering
+        uiRenderer.drawText(title, titleX, 200.0f, 2.0f, new Vector3f(1.0f, 1.0f, 1.0f));
         
         // Render buttons
         for (MenuButton button : buttons) {

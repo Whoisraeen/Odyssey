@@ -1,7 +1,7 @@
 package com.odyssey.ui;
 
 import com.odyssey.core.VoxelEngine;
-import com.odyssey.rendering.ui.UIRenderer;
+import com.odyssey.ui.UIRenderer;
 import com.odyssey.input.InputManager;
 import com.odyssey.audio.SoundManager;
 
@@ -31,9 +31,10 @@ public class GameStateManager {
         this.soundManager = soundManager;
         this.windowWidth = windowWidth;
         this.windowHeight = windowHeight;
-        this.currentState = GameState.MAIN_MENU;
+        this.currentState = GameState.IN_GAME;  // Bypass main menu and start directly in game
         
         initializeMenus();
+        // VoxelEngine will be initialized when setState is called from the game loop
     }
     
     private void initializeMenus() {
@@ -52,7 +53,8 @@ public class GameStateManager {
             case IN_GAME:
                 if (voxelEngine == null) {
                     // Create new world
-                    voxelEngine = new VoxelEngine(soundManager, windowWidth, windowHeight);
+                    voxelEngine = new VoxelEngine();
+                    voxelEngine.initialize(windowWidth, windowHeight);
                     // TODO: Apply world name and seed
                 }
                 break;

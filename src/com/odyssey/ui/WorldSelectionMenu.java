@@ -1,6 +1,6 @@
 package com.odyssey.ui;
 
-import com.odyssey.rendering.ui.UIRenderer;
+import com.odyssey.ui.UIRenderer;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
@@ -71,7 +71,7 @@ public class WorldSelectionMenu {
         }
         
         // Control buttons
-        float controlY = startY + Math.min(worldList.size(), 5) * BUTTON_SPACING + 50;
+        float controlY = startY + (int)Math.min(worldList.size(), 5) * BUTTON_SPACING + 50;
         
         // Load World button (only if a world is available)
         if (!worldList.isEmpty() && !worldList.get(0).equals("No saved worlds found")) {
@@ -145,18 +145,18 @@ public class WorldSelectionMenu {
         
         // Draw title
         String title = "Select World";
-        float titleX = (windowWidth - title.length() * 16) / 2;
-        uiRenderer.drawText(title, titleX, 150, 2.0f, new Vector3f(1.0f, 1.0f, 1.0f));
+        float titleX = (windowWidth - title.length() * 16) / 2.0f;
+        uiRenderer.drawText(title, titleX, 150.0f, 2.0f, new Vector3f(1.0f, 1.0f, 1.0f));
         
         // Draw instructions
         if (worldList.isEmpty() || worldList.get(0).equals("No saved worlds found")) {
             String noWorlds = "No saved worlds found. Create a new world first.";
-            float noWorldsX = (windowWidth - noWorlds.length() * 8) / 2;
-            uiRenderer.drawText(noWorlds, noWorldsX, 200, 1.0f, new Vector3f(0.8f, 0.8f, 0.8f));
+            float noWorldsX = (windowWidth - noWorlds.length() * 8) / 2.0f;
+            uiRenderer.drawText(noWorlds, noWorldsX, 200.0f, 1.0f, new Vector3f(0.8f, 0.8f, 0.8f));
         } else {
             String instructions = "Click on a world to select it, then click Load or Delete";
-            float instructionsX = (windowWidth - instructions.length() * 8) / 2;
-            uiRenderer.drawText(instructions, instructionsX, 200, 1.0f, new Vector3f(0.8f, 0.8f, 0.8f));
+            float instructionsX = (windowWidth - instructions.length() * 8) / 2.0f;
+            uiRenderer.drawText(instructions, instructionsX, 200.0f, 1.0f, new Vector3f(0.8f, 0.8f, 0.8f));
         }
         
         // Render buttons with selection highlighting

@@ -58,6 +58,10 @@ public class EntityManager {
         }
     }
     
+    public int getEntityCount() {
+        return entities.size();
+    }
+    
     public void cleanup() {
         for (Entity entity : entities) {
             if (entity instanceof Ship) {
