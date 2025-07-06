@@ -13,6 +13,7 @@ import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import com.odyssey.rendering.lighting.VolumetricLighting;
 import com.odyssey.rendering.lighting.ShadowMapping;
 import com.odyssey.rendering.clouds.CloudRenderer;
+import com.odyssey.rendering.SkyboxRenderer;
 import com.odyssey.core.VoxelEngine;
 import com.odyssey.environment.EnvironmentManager;
 import org.joml.Matrix4f;
@@ -41,6 +42,7 @@ public class AdvancedRenderingPipeline {
     private final SSAORenderer ssaoRenderer;
     private final ShadowMapping shadowMapping;
     private final CloudRenderer cloudRenderer;
+    private final SkyboxRenderer skyboxRenderer;
     
     // Shader programs
     private final ShaderManager shaderManager;
@@ -71,6 +73,7 @@ public class AdvancedRenderingPipeline {
         this.ssaoRenderer = new SSAORenderer(width, height);
         this.shadowMapping = new ShadowMapping(2048, 2048); // High-res shadow maps
         this.cloudRenderer = new CloudRenderer(width, height);
+        this.skyboxRenderer = new SkyboxRenderer();
         this.shaderManager = new ShaderManager();
         this.uniformBuffers = new UniformBufferManager();
         this.profiler = new PerformanceProfiler();
@@ -457,6 +460,7 @@ public class AdvancedRenderingPipeline {
         ssaoRenderer.cleanup();
         shadowMapping.cleanup();
         cloudRenderer.cleanup();
+        skyboxRenderer.cleanup();
         shaderManager.cleanup();
         uniformBuffers.cleanup();
         

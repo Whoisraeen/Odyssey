@@ -409,6 +409,51 @@ public class UIRenderer {
         return textRenderer != null ? textRenderer.getTextHeight(1.0f) : 0;
     }
     
+    public void updateScreenSize(int width, int height) {
+        // Validate screen dimensions
+        if (width <= 0 || height <= 0) {
+            System.err.println("Warning: Invalid screen dimensions in UIRenderer (" + width + "x" + height + ")");
+            return;
+        }
+        
+        // Create orthographic projection matrix
+        float[] projectionMatrix = new float[16];
+        // Initialize as identity
+        for (int i = 0; i < 16; i++) {
+            projectionMatrix[i] = (i % 5 == 0) ? 1.0f : 0.0f;
+        }
+        
+        // Set up orthographic projection: ortho(left, right, bottom, top, near, far)
+        projectionMatrix[0] = 2.0f / width;   // 2/(right-left)
+        projectionMatrix[5] = -2.0f / height; // 2/(top-bottom) - negative for screen coordinates
+        projectionMatrix[10] = -1.0f;         // 2/(far-near)
+        projectionMatrix[12] = -1.0f;         // -(right+left)/(right-left)
+        projectionMatrix[13] = 1.0f;          // -(top+bottom)/(top-bottom)
+        projectionMatrix[14] = 0.0f;          // -(far+near)/(far-near)
+        
+        // Validate projection matrix for NaN/infinity values
+        boolean isValid = true;
+        for (int i = 0; i < 16; i++) {
+            if (!Float.isFinite(projectionMatrix[i])) {
+                System.err.println("Warning: Invalid projection matrix in UIRenderer (element " + i + ": " + projectionMatrix[i] + ")");
+                isValid = false;
+                break;
+            }
+        }
+        
+        if (!isValid) return;
+        
+        // Update projection matrix
+        setProjectionMatrix(projectionMatrix);
+        
+        // Update TextRenderer screen size
+        if (textRenderer != null) {
+            textRenderer.updateScreenSize(width, height);
+        }
+        
+        System.out.println("UIRenderer: Screen size updated to " + width + "x" + height);
+    }
+    
     public void drawLine(float x1, float y1, float x2, float y2, int color, float thickness) {
         // Calculate line direction and perpendicular
         float dx = x2 - x1;

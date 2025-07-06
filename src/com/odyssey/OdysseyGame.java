@@ -9,6 +9,8 @@ import com.odyssey.player.Player;
 import com.odyssey.rendering.Camera;
 import com.odyssey.rendering.ui.Crosshair;
 import com.odyssey.rendering.ui.Hotbar;
+import com.odyssey.rendering.ui.FontManager;
+import com.odyssey.rendering.ui.TextRenderer;
 import com.odyssey.rendering.ui.UIRenderer;
 import com.odyssey.ui.GameState;
 import com.odyssey.ui.GameStateManager;
@@ -131,8 +133,12 @@ public class OdysseyGame implements Runnable {
         glfwSetCursorPosCallback(window, (window, xpos, ypos) -> {
             mouseX = xpos;
             mouseY = ypos;
-            if (gameStateManager != null && gameStateManager.getCurrentState() != GameState.IN_GAME) {
-                gameStateManager.handleMouseInput(mouseX, mouseY, false);
+            if (gameStateManager != null) {
+                if (gameStateManager.getCurrentState() == GameState.IN_GAME) {
+                    handleMouseMovement(xpos, ypos);
+                } else {
+                    gameStateManager.handleMouseInput(mouseX, mouseY, false);
+                }
             }
         });
         
@@ -168,6 +174,12 @@ public class OdysseyGame implements Runnable {
             this.width = w;
             this.height = h;
             glViewport(0, 0, w, h);
+            
+            // Update UI renderer projection matrix
+            if (uiRenderer != null) {
+                uiRenderer.updateScreenSize(w, h);
+            }
+            
             if (voxelEngine != null && h > 0) {
                 float aspectRatio = (float) w / h;
                 // Validate aspect ratio before setting
@@ -179,12 +191,7 @@ public class OdysseyGame implements Runnable {
             }
         });
         
-        // Set up mouse cursor position callback for camera rotation
-        glfwSetCursorPosCallback(window, (window, xpos, ypos) -> {
-            if (gameStateManager != null && gameStateManager.getCurrentState() == GameState.IN_GAME) {
-                handleMouseMovement(xpos, ypos);
-            }
-        });
+        // Mouse cursor position callback is already set above
 
         // Make the OpenGL context current
         glfwMakeContextCurrent(window);
@@ -205,8 +212,8 @@ public class OdysseyGame implements Runnable {
         glViewport(0, 0, width, height);
         System.out.println("DEBUG: Initial viewport set to " + width + "x" + height);
         
-        // Capture the mouse cursor for camera rotation
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        // Start with cursor enabled for main menu
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
         // Enable OpenGL features
         glEnable(GL_DEPTH_TEST);
@@ -218,8 +225,16 @@ public class OdysseyGame implements Runnable {
         soundManager = new SoundManager();
         soundManager.init();
 
-        uiRenderer = new UIRenderer(width, height);
-        System.out.println("DEBUG: UIRenderer created successfully");
+        // Initialize UI renderer
+        try {
+            System.out.println("DEBUG: Creating UIRenderer...");
+            uiRenderer = new UIRenderer(width, height);
+            System.out.println("DEBUG: UIRenderer created successfully");
+        } catch (Exception e) {
+            System.err.println("ERROR: Failed to initialize UI renderer: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
         
         gameStateManager = new GameStateManager(uiRenderer, soundManager, width, height);
         System.out.println("DEBUG: GameStateManager created successfully");
@@ -287,7 +302,7 @@ public class OdysseyGame implements Runnable {
                 
                 // Draw health
                 String healthText = "Health: " + (int)voxelEngine.getPlayer().getHealth();
-                uiRenderer.drawText(healthText, 20, 20, 1.0f, new Vector3f(1,1,1));
+                uiRenderer.drawText(healthText, 20, 20, 1.0f, new Vector3f(1.0f, 1.0f, 1.0f)); // White color
                 
                 glDisable(GL_BLEND);
                 glEnable(GL_DEPTH_TEST);

@@ -77,6 +77,11 @@ public class UIRenderer {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureId);
         ShaderManager.setUniform(shaderProgram, "spriteColor", color);
+        ShaderManager.setUniform(shaderProgram, "useTexture", 1); // true
+        
+        // Set identity model matrix
+        Matrix4f model = new Matrix4f();
+        ShaderManager.setUniform(shaderProgram, "model", model);
         
         drawTexture(x, y, width, height, 0.0f, 0.0f, 1.0f, 1.0f);
     }
@@ -107,6 +112,8 @@ public class UIRenderer {
         float b = (color & 0xFF) / 255.0f;
         Vector3f colorVec = new Vector3f(r, g, b);
         
+        // System.out.println("DEBUG: Drawing rect at (" + x + ", " + y + ") size (" + width + ", " + height + ") color: " + colorVec);
+        
         glUseProgram(shaderProgram);
         
         // Disable texture binding for solid color rendering
@@ -114,6 +121,11 @@ public class UIRenderer {
         glBindTexture(GL_TEXTURE_2D, 0);
         
         ShaderManager.setUniform(shaderProgram, "spriteColor", colorVec);
+        ShaderManager.setUniform(shaderProgram, "useTexture", 0); // false
+        
+        // Set identity model matrix
+        Matrix4f model = new Matrix4f();
+        ShaderManager.setUniform(shaderProgram, "model", model);
         
         float[] vertices = {
             // pos only (no texture coordinates needed for solid color)
@@ -139,6 +151,11 @@ public class UIRenderer {
     public void updateScreenSize(int width, int height) {
         this.screenWidth = width;
         this.screenHeight = height;
+        
+        // Update projection matrix for new screen size
+        glUseProgram(shaderProgram);
+        Matrix4f projection = new Matrix4f().ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
+        ShaderManager.setUniform(shaderProgram, "projection", projection);
         
         if (textRenderer != null) {
             textRenderer.updateScreenSize(width, height);

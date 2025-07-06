@@ -3,9 +3,14 @@
 in vec2 TexCoords;
 out vec4 FragColor;
 
-uniform sampler2D image;
+uniform sampler2D uTexture;
 uniform vec3 spriteColor;
+uniform bool useTexture;
 
 void main() {
-    FragColor = texture(image, TexCoords) * vec4(spriteColor, 1.0);
-} 
+    if (useTexture) {
+        FragColor = texture(uTexture, TexCoords) * vec4(spriteColor, 1.0);
+    } else {
+        FragColor = vec4(spriteColor, 1.0);
+    }
+}

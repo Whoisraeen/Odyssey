@@ -161,9 +161,16 @@ public class TextRenderer {
      * Internal text rendering method.
      */
     private void drawTextInternal(String text, float x, float y, float scale, Vector3f color, boolean bold) {
+        // System.out.println("DEBUG: Drawing text '" + text + "' at (" + x + ", " + y + ") scale: " + scale + " color: " + color);
+        
         glUseProgram(shaderProgram);
         font.bind();
         ShaderManager.setUniform(shaderProgram, "spriteColor", color);
+        ShaderManager.setUniform(shaderProgram, "useTexture", 1); // true for text rendering
+        
+        // Set identity model matrix
+        Matrix4f model = new Matrix4f();
+        ShaderManager.setUniform(shaderProgram, "model", model);
         
         float currentX = x;
         float currentY = y;
