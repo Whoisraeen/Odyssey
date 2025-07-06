@@ -90,7 +90,7 @@ public final class Looper {
                 System.err.println("Exception in message dispatch: " + exception.getMessage());
                 exception.printStackTrace();
                 end = System.currentTimeMillis();
-                throw exception;
+                // Continue running instead of crashing the thread
             } finally {
                 if (start == end) {
                     // Do nothing

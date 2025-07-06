@@ -13,7 +13,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class AnimationManager {
     
-    private final List<Animator> activeAnimations = new CopyOnWriteArrayList<>();
+    private final List<Animator> activeAnimations = new ArrayList<>();
     private final List<Animator> pendingAnimations = new ArrayList<>();
     private final List<Animator> finishedAnimations = new ArrayList<>();
     
@@ -41,7 +41,9 @@ public class AnimationManager {
             return;
         }
         
-        activeAnimations.remove(animator);
+        synchronized (activeAnimations) {
+            activeAnimations.remove(animator);
+        }
         synchronized (pendingAnimations) {
             pendingAnimations.remove(animator);
         }
@@ -71,12 +73,14 @@ public class AnimationManager {
             return;
         }
         
-        Iterator<Animator> iterator = activeAnimations.iterator();
-        while (iterator.hasNext()) {
-            Animator animator = iterator.next();
-            if (animator.getTarget() == component) {
-                animator.cancel();
-                iterator.remove();
+        synchronized (activeAnimations) {
+            Iterator<Animator> iterator = activeAnimations.iterator();
+            while (iterator.hasNext()) {
+                Animator animator = iterator.next();
+                if (animator.getTarget() == component) {
+                    animator.cancel();
+                    iterator.remove();
+                }
             }
         }
     }
@@ -97,23 +101,27 @@ public class AnimationManager {
             // Add pending animations
             synchronized (pendingAnimations) {
                 if (!pendingAnimations.isEmpty()) {
-                    activeAnimations.addAll(pendingAnimations);
+                    synchronized (activeAnimations) {
+                        activeAnimations.addAll(pendingAnimations);
+                    }
                     pendingAnimations.clear();
                 }
             }
             
             // Update active animations
-            Iterator<Animator> iterator = activeAnimations.iterator();
-            while (iterator.hasNext()) {
-                Animator animator = iterator.next();
-                
-                if (animator.isRunning()) {
-                    animator.update(currentTime);
-                } else if (animator.state == Animator.State.ENDED || 
-                          animator.state == Animator.State.CANCELLED) {
-                    iterator.remove();
-                    synchronized (finishedAnimations) {
-                        finishedAnimations.add(animator);
+            synchronized (activeAnimations) {
+                Iterator<Animator> iterator = activeAnimations.iterator();
+                while (iterator.hasNext()) {
+                    Animator animator = iterator.next();
+                    
+                    if (animator.isRunning()) {
+                        animator.update(currentTime);
+                    } else if (animator.state == Animator.State.ENDED || 
+                              animator.state == Animator.State.CANCELLED) {
+                        iterator.remove();
+                        synchronized (finishedAnimations) {
+                            finishedAnimations.add(animator);
+                        }
                     }
                 }
             }
@@ -132,14 +140,18 @@ public class AnimationManager {
      * Get the number of active animations
      */
     public int getActiveAnimationCount() {
-        return activeAnimations.size();
+        synchronized (activeAnimations) {
+            return activeAnimations.size();
+        }
     }
     
     /**
      * Check if there are any active animations
      */
     public boolean hasActiveAnimations() {
-        return !activeAnimations.isEmpty();
+        synchronized (activeAnimations) {
+            return !activeAnimations.isEmpty();
+        }
     }
     
     /**
@@ -147,11 +159,12 @@ public class AnimationManager {
      */
     public void clear() {
         // Cancel all active animations
-        for (Animator animator : activeAnimations) {
-            animator.cancel();
+        synchronized (activeAnimations) {
+            for (Animator animator : activeAnimations) {
+                animator.cancel();
+            }
+            activeAnimations.clear();
         }
-        
-        activeAnimations.clear();
         synchronized (pendingAnimations) {
             pendingAnimations.clear();
         }
