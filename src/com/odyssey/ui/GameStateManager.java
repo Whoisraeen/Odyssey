@@ -31,7 +31,7 @@ public class GameStateManager {
         this.soundManager = soundManager;
         this.windowWidth = windowWidth;
         this.windowHeight = windowHeight;
-        this.currentState = GameState.IN_GAME;  // Bypass main menu and start directly in game
+        this.currentState = GameState.MAIN_MENU;  // Start with main menu
         
         initializeMenus();
         // VoxelEngine will be initialized when setState is called from the game loop

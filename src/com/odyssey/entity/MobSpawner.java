@@ -21,6 +21,7 @@ public class MobSpawner {
     private final VoxelEngine engine;
     private final List<Mob> activeMobs;
     private final Random random;
+    private EntityManager entityManager;
     
     // Spawning configuration
     private static final int MAX_MOBS = 50;
@@ -38,6 +39,10 @@ public class MobSpawner {
         this.spawnTimer = 0.0f;
     }
     
+    public void setEntityManager(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+    
     public void update(float deltaTime) {
         updateActiveMobs(deltaTime);
         attemptSpawning(deltaTime);
@@ -52,6 +57,9 @@ public class MobSpawner {
             // Remove dead mobs
             if (mob.getHealth() <= 0) {
                 iterator.remove();
+                if (entityManager != null) {
+                    entityManager.removeMob(mob);
+                }
                 continue;
             }
             
@@ -79,6 +87,9 @@ public class MobSpawner {
                         Mob mob = createMob(mobType, spawnPos);
                         if (mob != null) {
                             activeMobs.add(mob);
+                            if (entityManager != null) {
+                                entityManager.addMob(mob);
+                            }
                             break; // Successfully spawned, stop attempting
                         }
                     }
@@ -184,10 +195,17 @@ public class MobSpawner {
     private void despawnDistantMobs() {
         Vector3f playerPos = engine.getPlayer().getPosition();
         
-        activeMobs.removeIf(mob -> {
+        Iterator<Mob> iterator = activeMobs.iterator();
+        while (iterator.hasNext()) {
+            Mob mob = iterator.next();
             float distance = mob.getPosition().distance(playerPos);
-            return distance > DESPAWN_RADIUS;
-        });
+            if (distance > DESPAWN_RADIUS) {
+                iterator.remove();
+                if (entityManager != null) {
+                    entityManager.removeMob(mob);
+                }
+            }
+        }
     }
     
     // Utility methods for external access

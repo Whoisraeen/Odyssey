@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
  * Uses Java 21 records for immutable configuration data.
  */
 @Component
-@ConfigurationProperties(prefix = "odyssey")
+// @ConfigurationProperties(prefix = "odyssey") // Temporarily disabled due to Java records compatibility
 public class GameConfiguration {
     
     private final WorldConfig world;

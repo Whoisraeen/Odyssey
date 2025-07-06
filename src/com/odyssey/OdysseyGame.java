@@ -211,7 +211,9 @@ public class OdysseyGame implements Runnable {
                 uiRenderer.updateScreenSize(w, h);
             }
             
-            if (voxelEngine != null && h > 0) {
+            // Only update camera aspect ratio if we're in game state and everything is initialized
+            if (gameStateManager != null && gameStateManager.getCurrentState() == GameState.IN_GAME && 
+                voxelEngine != null && voxelEngine.getCamera() != null && h > 0) {
                 float aspectRatio = (float) w / h;
                 // Validate aspect ratio before setting
                 if (Float.isFinite(aspectRatio) && aspectRatio > 0.1f && aspectRatio < 10.0f) {

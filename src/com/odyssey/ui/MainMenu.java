@@ -24,33 +24,16 @@ public class MainMenu {
     }
     
     private void initializeButtons() {
-        float centerX = 640; // Assuming 1280 width, center at 640
-        float startY = 300;
-        
-        // Start New World button
-        buttons.add(new MenuButton("Start New World", 
-            centerX - BUTTON_WIDTH/2, startY, BUTTON_WIDTH, BUTTON_HEIGHT,
-            () -> gameStateManager.setState(GameState.WORLD_CREATION)));
-        
-        // Load World button
-        buttons.add(new MenuButton("Load World", 
-            centerX - BUTTON_WIDTH/2, startY + BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT,
-            () -> gameStateManager.setState(GameState.WORLD_SELECTION)));
-        
-        // Settings button
-        buttons.add(new MenuButton("Settings", 
-            centerX - BUTTON_WIDTH/2, startY + BUTTON_SPACING * 2, BUTTON_WIDTH, BUTTON_HEIGHT,
-            () -> gameStateManager.setState(GameState.SETTINGS)));
-        
-        // Exit button
-        buttons.add(new MenuButton("Exit", 
-            centerX - BUTTON_WIDTH/2, startY + BUTTON_SPACING * 3, BUTTON_WIDTH, BUTTON_HEIGHT,
-            () -> System.exit(0)));
+        // Buttons will be created dynamically in updateButtonPositions method
+        // based on actual window size
     }
     
     public void render(int windowWidth, int windowHeight) {
         System.out.println("DEBUG: MainMenu.render() called with window size: " + windowWidth + "x" + windowHeight);
         System.out.println("DEBUG: UIRenderer text rendering available: " + uiRenderer.isTextRenderingAvailable());
+        
+        // Update button positions based on current window size
+        updateButtonPositions(windowWidth, windowHeight);
         
         // Draw title
         String title = "ODYSSEY";
@@ -75,6 +58,42 @@ public class MainMenu {
         }
     }
     
+    private void updateButtonPositions(int windowWidth, int windowHeight) {
+        float centerX = windowWidth / 2.0f;
+        float startY = windowHeight * 0.4f; // Start buttons at 40% down the screen
+        
+        // Clear existing buttons and recreate with correct positions
+        buttons.clear();
+        
+        // Quick Play button (directly start game)
+        buttons.add(new MenuButton("Quick Play", 
+            centerX - BUTTON_WIDTH/2, startY, BUTTON_WIDTH, BUTTON_HEIGHT,
+            () -> {
+                System.out.println("DEBUG: Quick Play button clicked, switching to IN_GAME state");
+                gameStateManager.setState(GameState.IN_GAME);
+            }));
+        
+        // Start New World button
+        buttons.add(new MenuButton("Start New World", 
+            centerX - BUTTON_WIDTH/2, startY + BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT,
+            () -> gameStateManager.setState(GameState.WORLD_CREATION)));
+        
+        // Load World button
+        buttons.add(new MenuButton("Load World", 
+            centerX - BUTTON_WIDTH/2, startY + BUTTON_SPACING * 2, BUTTON_WIDTH, BUTTON_HEIGHT,
+            () -> gameStateManager.setState(GameState.WORLD_SELECTION)));
+        
+        // Settings button
+        buttons.add(new MenuButton("Settings", 
+            centerX - BUTTON_WIDTH/2, startY + BUTTON_SPACING * 3, BUTTON_WIDTH, BUTTON_HEIGHT,
+            () -> gameStateManager.setState(GameState.SETTINGS)));
+        
+        // Exit button
+        buttons.add(new MenuButton("Exit", 
+            centerX - BUTTON_WIDTH/2, startY + BUTTON_SPACING * 4, BUTTON_WIDTH, BUTTON_HEIGHT,
+            () -> System.exit(0)));
+    }
+    
     public void handleMouseInput(double mouseX, double mouseY, boolean leftClick) {
         for (MenuButton button : buttons) {
             boolean wasHovered = button.isHovered();
@@ -85,6 +104,7 @@ public class MainMenu {
             if (leftClick && isHovered) {
                 button.setPressed(true);
             } else if (!leftClick && button.isPressed()) {
+                // This will trigger the onClick action if the button is hovered
                 button.setPressed(false);
             }
         }

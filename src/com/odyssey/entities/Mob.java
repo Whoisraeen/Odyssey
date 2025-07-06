@@ -1,13 +1,22 @@
 package com.odyssey.entities;
 
+import com.odyssey.core.VoxelEngine;
+import com.odyssey.entity.Entity;
+import com.odyssey.environment.EnvironmentManager;
+import com.odyssey.rendering.Camera;
 import com.odyssey.world.BlockType;
 import com.odyssey.world.World;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 
 import java.util.Random;
 
-public abstract class Mob {
+public abstract class Mob extends Entity {
     protected Vector3f position;
     protected Vector3f velocity;
     protected Vector3f targetPosition;
@@ -38,6 +47,7 @@ public abstract class Mob {
     }
     
     public Mob(Vector3f position, MobType type) {
+        super(position);
         this.position = new Vector3f(position);
         this.velocity = new Vector3f();
         this.targetPosition = new Vector3f();
@@ -52,9 +62,29 @@ public abstract class Mob {
         this.wanderTarget = new Vector3f();
         
         initializeMobStats();
+        initializeMobModel();
     }
     
     protected abstract void initializeMobStats();
+    
+    protected abstract void initializeMobModel();
+    
+    @Override
+    public void render(Camera camera, EnvironmentManager environmentManager) {
+        if (state == MobState.DEAD) {
+            return; // Don't render dead mobs
+        }
+        
+        // Create model matrix for mob positioning
+        Matrix4f modelMatrix = new Matrix4f()
+            .translate(position.x, position.y, position.z)
+            .scale(0.8f, 1.8f, 0.8f); // Mob size (width, height, depth)
+        
+        // Render mob model based on type
+        renderMobModel(modelMatrix, camera, environmentManager);
+    }
+    
+    protected abstract void renderMobModel(Matrix4f modelMatrix, Camera camera, EnvironmentManager environmentManager);
     
     public void update(float deltaTime, World world, Vector3f playerPosition) {
         // Update timers

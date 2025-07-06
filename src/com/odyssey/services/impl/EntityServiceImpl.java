@@ -38,6 +38,7 @@ public class EntityServiceImpl implements EntityService {
     public void setVoxelEngine(com.odyssey.core.VoxelEngine voxelEngine) {
         // Recreate MobSpawner with proper VoxelEngine reference
         this.mobSpawner = new MobSpawner(voxelEngine);
+        this.mobSpawner.setEntityManager(this.entityManager);
     }
     
     @Override

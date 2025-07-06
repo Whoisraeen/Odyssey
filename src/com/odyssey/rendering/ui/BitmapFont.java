@@ -4,6 +4,7 @@ import com.odyssey.rendering.Texture;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,15 +50,95 @@ public class BitmapFont {
      * @param baseline Distance from top to baseline
      */
     public BitmapFont(String atlasPath, int atlasWidth, int atlasHeight, int lineHeight, int baseline) {
-        this.fontAtlas = new Texture(atlasPath);
-        this.glyphs = new HashMap<>();
+        System.out.println("BitmapFont: Initializing with atlas: " + atlasPath);
         this.atlasWidth = atlasWidth;
         this.atlasHeight = atlasHeight;
         this.lineHeight = lineHeight;
         this.baseline = baseline;
+        this.glyphs = new HashMap<>();
         
-        // Initialize ASCII character set (32-126)
-        initializeASCIIGlyphs();
+        // Load the texture atlas
+        System.out.println("BitmapFont: Loading texture from: " + atlasPath);
+        try {
+            this.fontAtlas = new Texture(atlasPath);
+            System.out.println("BitmapFont: Texture loaded successfully");
+        } catch (Exception e) {
+            System.err.println("BitmapFont: Failed to load texture: " + e.getMessage());
+            throw e;
+        }
+        
+        // Load font data from .fnt file
+        String fntPath = atlasPath.replace(".png", ".fnt");
+        if (fntPath.contains("_0.png")) {
+            fntPath = fntPath.replace("_0.fnt", ".fnt");
+        }
+        
+        System.out.println("BitmapFont: Attempting to load font data from: " + fntPath);
+        try {
+            loadFontData(fntPath);
+            System.out.println("BitmapFont loaded: " + glyphs.size() + " glyphs from " + fntPath);
+        } catch (Exception e) {
+            System.err.println("Failed to load .fnt file: " + fntPath + ", falling back to ASCII grid");
+            e.printStackTrace();
+            // Fallback to ASCII initialization
+            System.out.println("BitmapFont: Using ASCII fallback");
+            initializeASCIIGlyphs();
+        }
+    }
+    
+    private void loadFontData(String fntPath) throws IOException {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream(fntPath);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+            
+            if (is == null) {
+                throw new IOException("Font file not found: " + fntPath);
+            }
+            
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.startsWith("char id=")) {
+                    parseCharLine(line);
+                }
+            }
+        }
+    }
+    
+    private void parseCharLine(String line) {
+        // Parse: char id=65   x=101   y=0    width=11    height=10    xoffset=-1    yoffset=3     xadvance=9     page=0  chnl=15
+        String[] parts = line.split("\\s+");
+        
+        int id = 0, x = 0, y = 0, width = 0, height = 0, xoffset = 0, yoffset = 0, xadvance = 0;
+        
+        for (String part : parts) {
+            if (part.startsWith("id=")) {
+                id = Integer.parseInt(part.substring(3));
+            } else if (part.startsWith("x=")) {
+                x = Integer.parseInt(part.substring(2));
+            } else if (part.startsWith("y=")) {
+                y = Integer.parseInt(part.substring(2));
+            } else if (part.startsWith("width=")) {
+                width = Integer.parseInt(part.substring(6));
+            } else if (part.startsWith("height=")) {
+                height = Integer.parseInt(part.substring(7));
+            } else if (part.startsWith("xoffset=")) {
+                xoffset = Integer.parseInt(part.substring(8));
+            } else if (part.startsWith("yoffset=")) {
+                yoffset = Integer.parseInt(part.substring(8));
+            } else if (part.startsWith("xadvance=")) {
+                xadvance = Integer.parseInt(part.substring(9));
+            }
+        }
+        
+        // Convert to normalized UV coordinates
+        float u = (float) x / atlasWidth;
+        float v = (float) y / atlasHeight;
+        float normWidth = (float) width / atlasWidth;
+        float normHeight = (float) height / atlasHeight;
+        
+        char character = (char) id;
+        Glyph glyph = new Glyph(u, v, normWidth, normHeight, xadvance, xoffset, yoffset, width, height);
+        glyphs.put(character, glyph);
     }
     
     /**

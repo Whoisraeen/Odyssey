@@ -1,0 +1,114 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< com.odyssey:odyssey-engine >---------------------
+[INFO] Building odyssey-engine 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- exec:3.1.0:java (default-cli) @ odyssey-engine ---
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.0)
+
+2025-07-06T16:03:00.408-05:00  INFO 53264 --- [sseyGame.main()] com.odyssey.OdysseyGame                  : Starting OdysseyGame using Java 21.0.7 with PID 53264 (C:\Users\woisr\Downloads\Odyssey\target\classes started by woisr in C:\Users\woisr\Downloads\Odyssey)
+2025-07-06T16:03:00.410-05:00  INFO 53264 --- [sseyGame.main()] com.odyssey.OdysseyGame                  : No active profile set, falling back to 1 default profile: "default"
+2025-07-06T16:03:00.718-05:00  INFO 53264 --- [sseyGame.main()] c.odyssey.config.ConfigurationManager    : Configuration loaded successfully
+2025-07-06T16:03:00.786-05:00  INFO 53264 --- [sseyGame.main()] com.odyssey.OdysseyGame                  : Started OdysseyGame in 0.567 seconds (process running for 2.032)
+DEBUG: Initial viewport set to 1280x720
+OpenGL Version: 4.5.0 NVIDIA 576.52
+DEBUG: Creating UIRenderer...
+FontManager: Starting font loading process...
+FontManager: Attempting to load font from assets/font_atlas.png_0.png
+BitmapFont: Initializing with atlas: assets/font_atlas.png_0.png
+BitmapFont: Loading texture from: assets/font_atlas.png_0.png
+BitmapFont: Failed to load texture: Failed to load texture: assets/font_atlas.png_0.png
+FontManager: Failed to load default font: Failed to load texture: assets/font_atlas.png_0.png
+java.lang.RuntimeException: Failed to load texture: assets/font_atlas.png_0.png
+	at com.odyssey.rendering.Texture.loadTexture(Texture.java:56)
+	at com.odyssey.rendering.Texture.<init>(Texture.java:21)
+	at com.odyssey.rendering.ui.BitmapFont.<init>(BitmapFont.java:63)
+	at com.odyssey.rendering.ui.FontManager.loadDefaultFonts(FontManager.java:39)
+	at com.odyssey.rendering.ui.FontManager.<init>(FontManager.java:18)
+	at com.odyssey.rendering.ui.FontManager.getInstance(FontManager.java:26)
+	at com.odyssey.OdysseyGame.init(OdysseyGame.java:264)
+	at com.odyssey.OdysseyGame.run(OdysseyGame.java:98)
+	at com.odyssey.OdysseyGame.main(OdysseyGame.java:92)
+	at org.codehaus.mojo.exec.ExecJavaMojo$1.run(ExecJavaMojo.java:279)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.lang.RuntimeException: Can't find texture file at assets/font_atlas.png_0.png
+	at com.odyssey.rendering.Texture.loadTexture(Texture.java:47)
+	... 10 more
+FontManager: Attempting to create fallback font...
+FontManager: Creating fallback font...
+FontManager: Attempting fallback font from resources/textures/font.png
+BitmapFont: Initializing with atlas: resources/textures/font.png
+BitmapFont: Loading texture from: resources/textures/font.png
+BitmapFont: Failed to load texture: Failed to load texture: resources/textures/font.png
+FontManager: Failed to load fallback font: Failed to load texture: resources/textures/font.png
+java.lang.RuntimeException: Failed to load texture: resources/textures/font.png
+	at com.odyssey.rendering.Texture.loadTexture(Texture.java:56)
+	at com.odyssey.rendering.Texture.<init>(Texture.java:21)
+	at com.odyssey.rendering.ui.BitmapFont.<init>(BitmapFont.java:63)
+	at com.odyssey.rendering.ui.FontManager.createFallbackFont(FontManager.java:76)
+	at com.odyssey.rendering.ui.FontManager.loadDefaultFonts(FontManager.java:58)
+	at com.odyssey.rendering.ui.FontManager.<init>(FontManager.java:18)
+	at com.odyssey.rendering.ui.FontManager.getInstance(FontManager.java:26)
+	at com.odyssey.OdysseyGame.init(OdysseyGame.java:264)
+	at com.odyssey.OdysseyGame.run(OdysseyGame.java:98)
+	at com.odyssey.OdysseyGame.main(OdysseyGame.java:92)
+	at org.codehaus.mojo.exec.ExecJavaMojo$1.run(ExecJavaMojo.java:279)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.lang.RuntimeException: Can't find texture file at resources/textures/font.png
+	at com.odyssey.rendering.Texture.loadTexture(Texture.java:47)
+	... 11 more
+FontManager: No fonts available - text rendering will be disabled
+FontManager: Both main and fallback font loading failed!
+FontManager: Font 'default' not found, using default
+ERROR: Failed to initialize UI renderer: FontManager: No fonts available for text rendering
+java.lang.RuntimeException: FontManager: No fonts available for text rendering
+	at com.odyssey.rendering.ui.FontManager.createTextRenderer(FontManager.java:178)
+	at com.odyssey.rendering.ui.FontManager.createTextRenderer(FontManager.java:164)
+	at com.odyssey.OdysseyGame.init(OdysseyGame.java:265)
+	at com.odyssey.OdysseyGame.run(OdysseyGame.java:98)
+	at com.odyssey.OdysseyGame.main(OdysseyGame.java:92)
+	at org.codehaus.mojo.exec.ExecJavaMojo$1.run(ExecJavaMojo.java:279)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2025-07-06T16:03:01.195-05:00  INFO 53264 --- [sseyGame.main()] c.o.services.impl.GameEngineServiceImpl  : Cleaning up game engine...
+2025-07-06T16:03:01.196-05:00  INFO 53264 --- [sseyGame.main()] c.o.services.impl.WorldServiceImpl       : World service cleaned up
+2025-07-06T16:03:01.196-05:00  INFO 53264 --- [sseyGame.main()] c.o.services.impl.RenderingServiceImpl   : Rendering service cleaned up
+2025-07-06T16:03:01.196-05:00  INFO 53264 --- [sseyGame.main()] c.o.services.impl.EntityServiceImpl      : Entity service cleaned up
+2025-07-06T16:03:01.196-05:00  INFO 53264 --- [sseyGame.main()] c.o.s.impl.EnvironmentServiceImpl        : Environment service cleaned up
+2025-07-06T16:03:01.196-05:00  INFO 53264 --- [sseyGame.main()] c.o.services.impl.GameEngineServiceImpl  : Game engine cleanup completed
+2025-07-06T16:03:01.212-05:00  INFO 53264 --- [sseyGame.main()] c.o.services.impl.GameEngineServiceImpl  : Cleaning up game engine...
+2025-07-06T16:03:01.212-05:00  INFO 53264 --- [sseyGame.main()] c.o.services.impl.WorldServiceImpl       : World service cleaned up
+2025-07-06T16:03:01.212-05:00  INFO 53264 --- [sseyGame.main()] c.o.services.impl.RenderingServiceImpl   : Rendering service cleaned up
+2025-07-06T16:03:01.212-05:00  INFO 53264 --- [sseyGame.main()] c.o.services.impl.EntityServiceImpl      : Entity service cleaned up
+2025-07-06T16:03:01.212-05:00  INFO 53264 --- [sseyGame.main()] c.o.s.impl.EnvironmentServiceImpl        : Environment service cleaned up
+2025-07-06T16:03:01.212-05:00  INFO 53264 --- [sseyGame.main()] c.o.services.impl.GameEngineServiceImpl  : Game engine cleanup completed
+[WARNING] 
+java.lang.RuntimeException: FontManager: No fonts available for text rendering
+    at com.odyssey.rendering.ui.FontManager.createTextRenderer (FontManager.java:178)
+    at com.odyssey.rendering.ui.FontManager.createTextRenderer (FontManager.java:164)
+    at com.odyssey.OdysseyGame.init (OdysseyGame.java:265)
+    at com.odyssey.OdysseyGame.run (OdysseyGame.java:98)
+    at com.odyssey.OdysseyGame.main (OdysseyGame.java:92)
+    at org.codehaus.mojo.exec.ExecJavaMojo$1.run (ExecJavaMojo.java:279)
+    at java.lang.Thread.run (Thread.java:1583)
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.613 s
+[INFO] Finished at: 2025-07-06T16:03:01-05:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.codehaus.mojo:exec-maven-plugin:3.1.0:java (default-cli) on project odyssey-engine: An exception occurred while executing the Java class. FontManager: No fonts available for text rendering -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException

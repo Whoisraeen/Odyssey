@@ -32,13 +32,15 @@ public class FontManager {
      * Load default fonts for the engine.
      */
     private void loadDefaultFonts() {
+        System.out.println("FontManager: Starting font loading process...");
         // Load the main bitmap font atlas
         try {
+            System.out.println("FontManager: Attempting to load font from assets/font_atlas.png_0.png");
             BitmapFont mainFont = new BitmapFont(
-                "assets/textures/font_atlas.png", 
-                256, 96,  // Atlas dimensions
-                16,       // Line height
-                12        // Baseline
+                "assets/font_atlas.png_0.png", 
+                256, 256,  // Atlas dimensions (corrected to match actual file)
+                16,        // Line height
+                13         // Baseline (from .fnt file)
             );
             
             fonts.put("default", mainFont);
@@ -49,9 +51,17 @@ public class FontManager {
             
         } catch (Exception e) {
             System.err.println("FontManager: Failed to load default font: " + e.getMessage());
+            e.printStackTrace();
             
             // Create a fallback font with minimal functionality
+            System.out.println("FontManager: Attempting to create fallback font...");
             createFallbackFont();
+        }
+        
+        if (defaultFont == null) {
+            System.err.println("FontManager: Both main and fallback font loading failed!");
+        } else {
+            System.out.println("FontManager: Font loading completed successfully");
         }
     }
     
@@ -59,8 +69,10 @@ public class FontManager {
      * Create a minimal fallback font when the main font fails to load.
      */
     private void createFallbackFont() {
+        System.out.println("FontManager: Creating fallback font...");
         try {
             // Try to use the old font.png if it exists
+            System.out.println("FontManager: Attempting fallback font from resources/textures/font.png");
             BitmapFont fallbackFont = new BitmapFont(
                 "resources/textures/font.png", 
                 256, 256, // Assume square atlas
@@ -72,10 +84,12 @@ public class FontManager {
             fonts.put("fallback", fallbackFont);
             defaultFont = fallbackFont;
             
-            System.out.println("FontManager: Using fallback font");
+            System.out.println("FontManager: Using fallback font successfully");
             
         } catch (Exception e2) {
             System.err.println("FontManager: Failed to load fallback font: " + e2.getMessage());
+            e2.printStackTrace();
+            System.err.println("FontManager: No fonts available - text rendering will be disabled");
             // At this point, text rendering will be disabled
         }
     }

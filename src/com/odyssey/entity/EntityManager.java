@@ -1,6 +1,7 @@
 package com.odyssey.entity;
 
 import com.odyssey.core.VoxelEngine;
+import com.odyssey.entities.Mob;
 import com.odyssey.environment.EnvironmentManager;
 import com.odyssey.rendering.Camera;
 
@@ -14,6 +15,7 @@ import org.joml.Vector3i;
 public class EntityManager {
     
     private final List<Entity> entities = new ArrayList<>();
+    private final List<Mob> mobs = new ArrayList<>();
     
     public void addEntity(Entity entity) {
         entities.add(entity);
@@ -21,6 +23,14 @@ public class EntityManager {
     
     public void removeEntity(Entity entity) {
         entities.remove(entity);
+    }
+    
+    public void addMob(Mob mob) {
+        mobs.add(mob);
+    }
+    
+    public void removeMob(Mob mob) {
+        mobs.remove(mob);
     }
     
     public Entity getEntityAt(Vector3i worldPos) {
@@ -41,11 +51,22 @@ public class EntityManager {
     }
     
     public void update(float deltaTime, VoxelEngine engine, EnvironmentManager environmentManager) {
+        // Update entities
         for (int i = entities.size() - 1; i >= 0; i--) {
             Entity entity = entities.get(i);
             entity.update(deltaTime, engine, environmentManager);
             if (entity.isRemoved()) {
                 entities.remove(i);
+            }
+        }
+        
+        // Update mobs
+        for (int i = mobs.size() - 1; i >= 0; i--) {
+            Mob mob = mobs.get(i);
+            // Note: Mob update method signature is different, we'll need to adapt this
+            // For now, we'll skip mob updates in EntityManager since they're handled elsewhere
+            if (!mob.isAlive()) {
+                mobs.remove(i);
             }
         }
     }
@@ -58,8 +79,32 @@ public class EntityManager {
         }
     }
     
+    public void render(Camera camera, EnvironmentManager environmentManager) {
+        // Render entities
+        for (Entity entity : entities) {
+            if (entity instanceof Ship) {
+                ((Ship) entity).render(camera, environmentManager);
+            }
+        }
+        
+        // Render mobs
+        for (Mob mob : mobs) {
+            if (mob.isAlive()) {
+                mob.render(camera, environmentManager);
+            }
+        }
+    }
+    
     public int getEntityCount() {
         return entities.size();
+    }
+    
+    public int getMobCount() {
+        return mobs.size();
+    }
+    
+    public int getTotalEntityCount() {
+        return entities.size() + mobs.size();
     }
     
     public void cleanup() {
@@ -68,5 +113,8 @@ public class EntityManager {
                 ((Ship) entity).cleanup();
             }
         }
+        
+        // Cleanup mobs (if they have cleanup methods in the future)
+        mobs.clear();
     }
 }

@@ -3,6 +3,7 @@ package com.odyssey.services.impl;
 import com.odyssey.config.GameConfiguration;
 import com.odyssey.services.RenderingService;
 import com.odyssey.services.EnvironmentService;
+import com.odyssey.services.EntityService;
 import com.odyssey.rendering.*;
 import com.odyssey.rendering.scene.Scene;
 import com.odyssey.world.Chunk;
@@ -31,6 +32,9 @@ public class RenderingServiceImpl implements RenderingService {
     
     @Autowired
     private WorldServiceImpl worldService;
+    
+    @Autowired
+    private EntityService entityService;
     
     private ShaderManager shaderManager;
     private AdvancedRenderingPipeline renderingPipeline;
@@ -84,6 +88,13 @@ public class RenderingServiceImpl implements RenderingService {
         float lightningFlash = environmentService.getLightningFlashIntensity();
         
         renderingPipeline.render(camera, scene, deltaTime, time, cloudCoverage, cloudDensity, lightningFlash);
+        
+        // Render entities (ships and mobs)
+        if (entityService instanceof EntityServiceImpl entityServiceImpl) {
+            entityServiceImpl.getEntityManager().render(camera, 
+                environmentService instanceof EnvironmentServiceImpl envServiceImpl ? 
+                envServiceImpl.getEnvironmentManager() : null);
+        }
         
         logger.debug("Frame rendered with {} scene objects", scene.getObjects().size());
     }
