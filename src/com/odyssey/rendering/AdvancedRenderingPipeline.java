@@ -14,7 +14,7 @@ import com.odyssey.rendering.lighting.ShadowMapping;
 import com.odyssey.rendering.clouds.CloudRenderer;
 import com.odyssey.core.VoxelEngine;
 import com.odyssey.environment.EnvironmentManager;
-import com.odyssey.core.Matrix4f;
+import org.joml.Matrix4f;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.glUseProgram;
