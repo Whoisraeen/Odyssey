@@ -48,10 +48,17 @@ public class Scene {
     
     public void addObject(RenderObject object) {
         objects.add(object);
+        System.out.println("DEBUG: Added object to scene. Total objects: " + objects.size() + 
+                          " (Type: " + object.getClass().getSimpleName() + ")");
     }
     
     public void removeObject(RenderObject object) {
-        objects.remove(object);
+        boolean removed = objects.remove(object);
+        if (removed) {
+            System.out.println("DEBUG: Removed object from scene. Remaining objects: " + objects.size());
+        } else {
+            System.out.println("WARNING: Attempted to remove object that wasn't in scene");
+        }
     }
     
     public void addLight(Light light) {
@@ -108,8 +115,11 @@ public class Scene {
     }
     
     public void clear() {
+        int objectCount = objects.size();
+        int lightCount = lights.size();
         objects.clear();
         lights.clear();
+        System.out.println("DEBUG: Scene cleared. Removed " + objectCount + " objects and " + lightCount + " lights");
     }
     
     public void cleanup() {

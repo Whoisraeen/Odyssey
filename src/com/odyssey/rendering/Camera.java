@@ -45,7 +45,7 @@ public class Camera {
     public Camera() {
         this.position = new Vector3f(0.0f, 70.0f, 0.0f);
         this.worldUp = new Vector3f(0.0f, 1.0f, 0.0f);
-        this.yaw = -90.0f;
+        this.yaw = 90.0f;  // Look towards negative X direction where terrain is typically generated
         this.pitch = 0.0f;
         this.fov = 45.0f;
         this.aspectRatio = 1920.0f / 1080.0f;
@@ -138,6 +138,29 @@ public class Camera {
     public void moveDown(float distance) {
         position.sub(new Vector3f(up).mul(distance));
         updateMatrices();
+    }
+    
+    public void lookAt(float x, float y, float z) {
+        lookAt(new Vector3f(x, y, z));
+    }
+    
+    public void lookAt(Vector3f target) {
+        Vector3f direction = new Vector3f(target).sub(position).normalize();
+        
+        // Calculate pitch (up/down rotation)
+        float newPitch = (float) Math.toDegrees(Math.asin(direction.y));
+        
+        // Calculate yaw (left/right rotation)
+        float newYaw = (float) Math.toDegrees(Math.atan2(direction.z, direction.x));
+        
+        // Apply rotations
+        this.pitch = Math.max(-89.0f, Math.min(89.0f, newPitch));
+        this.yaw = newYaw;
+        
+        updateCameraVectors();
+        updateMatrices();
+        
+        System.out.println("DEBUG: Camera lookAt " + target + " - yaw: " + yaw + ", pitch: " + pitch);
     }
     
     public Matrix4f getViewMatrix() {
@@ -380,7 +403,7 @@ public class Camera {
     private void resetToFallbackState() {
         this.position.set(FALLBACK_POSITION);
         this.worldUp.set(0.0f, 1.0f, 0.0f);
-        this.yaw = -90.0f;
+        this.yaw = 90.0f;  // Look towards negative X direction where terrain is typically generated
         this.pitch = 0.0f;
         this.fov = FALLBACK_FOV;
         this.aspectRatio = FALLBACK_ASPECT_RATIO;

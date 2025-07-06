@@ -40,7 +40,24 @@ public class ChunkRenderObject extends RenderObject {
     private static Material createChunkMaterial() {
         // Load terrain texture if not already loaded
         if (terrainTexture == 0) {
-            terrainTexture = Texture.loadTexture("assets/textures/terrain.png");
+            try {
+                terrainTexture = Texture.loadTexture("assets/textures/terrain.png");
+                if (terrainTexture == 0) {
+                    System.err.println("CRITICAL ERROR: Failed to load terrain texture - chunks will be invisible!");
+                    // Try fallback texture path
+                    terrainTexture = Texture.loadTexture("resources/assets/textures/terrain.png");
+                    if (terrainTexture == 0) {
+                        System.err.println("CRITICAL ERROR: Fallback terrain texture also failed to load!");
+                    } else {
+                        System.out.println("DEBUG: Loaded terrain texture from fallback path");
+                    }
+                } else {
+                    System.out.println("DEBUG: Terrain texture loaded successfully");
+                }
+            } catch (Exception e) {
+                System.err.println("CRITICAL ERROR: Exception loading terrain texture: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
         
         // Create material with terrain texture

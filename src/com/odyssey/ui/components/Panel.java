@@ -271,7 +271,7 @@ public class Panel extends UIComponent {
         if (wasHovered != nowHovered) {
             setHovered(nowHovered);
             if (getOnHoverListener() != null) {
-                getOnHoverListener().onHover(this, nowHovered);
+                getOnHoverListener().onHoverChange(this, nowHovered);
             }
             handled = true;
         }
@@ -296,19 +296,19 @@ public class Panel extends UIComponent {
     }
     
     @Override
-    public boolean onCharInput(char character) {
+    public boolean onCharInput(int codepoint) {
         if (!isVisible() || !isEnabled()) {
             return false;
         }
-        
+
         // Forward to focused child first
         for (UIComponent child : children) {
-            if (child.isFocused() && child.onCharInput(character)) {
+            if (child.isFocused() && child.onCharInput(codepoint)) {
                 return true;
             }
         }
-        
-        return super.onCharInput(character);
+
+        return super.onCharInput(codepoint);
     }
     
     @Override

@@ -2,6 +2,7 @@ package com.odyssey.rendering;
 
 import com.odyssey.core.PerformanceProfiler;
 import com.odyssey.rendering.Camera;
+import com.odyssey.rendering.GLErrorChecker;
 import com.odyssey.rendering.scene.RenderObject;
 import com.odyssey.rendering.scene.Scene;
 import java.util.Map;
@@ -101,6 +102,18 @@ public class AdvancedRenderingPipeline {
      */
     public void render(Camera camera, Scene scene, float deltaTime, float time, float cloudCoverage, float cloudDensity, float lightningFlash) {
         profiler.startFrame();
+        
+        // Debug scene content
+        int totalObjects = scene.getObjects().size();
+        int opaqueObjects = scene.getOpaqueObjects().size();
+        int transparentObjects = scene.getTransparentObjects().size();
+        
+        if (totalObjects == 0) {
+            System.out.println("WARNING: Scene has no objects to render - this will cause black screen!");
+        } else {
+            System.out.println("DEBUG: Rendering scene with " + totalObjects + " objects (" + 
+                opaqueObjects + " opaque, " + transparentObjects + " transparent)");
+        }
         
         // Update uniform buffers
         updateUniforms(camera, scene, deltaTime);
@@ -247,24 +260,43 @@ public class AdvancedRenderingPipeline {
     }
     
     private void initializeShaders() {
-        // Load and compile all shaders
-        shaderPrograms.put("geometry", shaderManager.loadProgram(
-            "resources/shaders/geometry.vert", "resources/shaders/geometry.frag"));
-        shaderPrograms.put("forward", shaderManager.loadProgram(
-            "resources/shaders/forward.vert", "resources/shaders/forward.frag"));
-        shaderPrograms.put("deferred_lighting", shaderManager.loadProgram(
-            "resources/shaders/deferred_lighting.vert", "resources/shaders/deferred_lighting.frag"));
-        shaderPrograms.put("volumetric", shaderManager.loadProgram(
-            "resources/shaders/volumetric.vert", "resources/shaders/volumetric.frag"));
-        shaderPrograms.put("ssao", shaderManager.loadProgram(
-            "resources/shaders/ssao.vert", "resources/shaders/ssao.frag"));
-        shaderPrograms.put("shadow", shaderManager.loadProgram(
-            "resources/shaders/shadow.vert", "resources/shaders/shadow.frag"));
-        shaderPrograms.put("final_composite", shaderManager.loadProgram(
-            "resources/shaders/final_composite.vert", "resources/shaders/final_composite.frag"));
+        System.out.println("DEBUG: Loading rendering pipeline shaders...");
+        
+        // Load and compile all shaders with validation
+        String[] criticalShaders = {
+            "geometry", "forward", "deferred_lighting", "volumetric", 
+            "ssao", "shadow", "final_composite"
+        };
+        
+        String[][] shaderPaths = {
+            {"shaders/geometry.vert", "shaders/geometry.frag"},
+            {"shaders/forward.vert", "shaders/forward.frag"},
+            {"shaders/deferred_lighting.vert", "shaders/deferred_lighting.frag"},
+            {"shaders/volumetric.vert", "shaders/volumetric.frag"},
+            {"shaders/ssao.vert", "shaders/ssao.frag"},
+            {"shaders/shadow.vert", "shaders/shadow.frag"},
+            {"shaders/final_composite.vert", "shaders/final_composite.frag"}
+        };
+        
+        for (int i = 0; i < criticalShaders.length; i++) {
+            String shaderName = criticalShaders[i];
+            String[] paths = shaderPaths[i];
             
+            int shaderProgram = shaderManager.loadProgram(paths[0], paths[1]);
+            shaderPrograms.put(shaderName, shaderProgram);
+            
+            if (shaderProgram == 0) {
+                System.err.println("CRITICAL ERROR: Failed to load " + shaderName + " shader (" + paths[0] + ", " + paths[1] + ")");
+                throw new RuntimeException("Critical shader " + shaderName + " failed to load - this will cause black screen");
+            } else {
+                System.out.println("DEBUG: " + shaderName + " shader loaded successfully (ID: " + shaderProgram + ")");
+            }
+        }
+        
         // Pass the deferred lighting shader to the lighting system
         lightingSystem.setDeferredLightingShader(shaderPrograms.get("deferred_lighting"));
+        
+        System.out.println("DEBUG: All rendering pipeline shaders loaded successfully");
     }
     
     private void setupFinalQuad() {
@@ -313,6 +345,26 @@ public class AdvancedRenderingPipeline {
     
     private void renderFinalComposition() {
         System.out.println("Final composition: Rendering to screen");
+        
+        // Clear any accumulated OpenGL errors before we start
+        GLErrorChecker.clearGLErrors();
+        
+        // Validate and reset OpenGL state before final composition
+        validateAndResetOpenGLState();
+        
+        // Check if state reset fixed any issues
+        if (GLErrorChecker.hasGLError()) {
+            System.err.println("WARNING: OpenGL errors still present after state reset!");
+            logOpenGLState();
+            GLErrorChecker.clearGLErrors();
+            
+            // Try a more aggressive reset
+            System.out.println("DEBUG: Attempting aggressive OpenGL state reset...");
+            aggressiveStateReset();
+        } else {
+            System.out.println("DEBUG: OpenGL state is clean, proceeding with final composition");
+        }
+        
         // Save current OpenGL state
         int previousProgram = glGetInteger(GL_CURRENT_PROGRAM);
         int previousVAO = glGetInteger(GL_VERTEX_ARRAY_BINDING);
@@ -321,26 +373,65 @@ public class AdvancedRenderingPipeline {
         
         // Bind default framebuffer (screen)
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        GLErrorChecker.checkGLError("binding default framebuffer");
+        
         glClear(GL_COLOR_BUFFER_BIT);
+        GLErrorChecker.checkGLError("clearing screen");
         
         // Use final composition shader
-        int finalShader = shaderPrograms.get("final_composite");
+        Integer finalShaderObj = shaderPrograms.get("final_composite");
+        if (finalShaderObj == null) {
+            System.err.println("CRITICAL ERROR: final_composite shader not found!");
+            return;
+        }
+        
+        int finalShader = finalShaderObj;
+        if (!GLErrorChecker.validateShaderProgram(finalShader, "renderFinalComposition")) {
+            System.err.println("CRITICAL ERROR: Invalid final_composite shader program!");
+            return;
+        }
+        
         glUseProgram(finalShader);
+        GLErrorChecker.checkGLError("using final shader");
         
-        // Bind the final processed image texture
+        // Validate and bind the final processed image texture
+        int finalImageTexture = postProcessing.getFinalImageTexture();
+        if (!GLErrorChecker.validateTexture(finalImageTexture, "final image texture")) {
+            System.err.println("CRITICAL ERROR: Invalid final image texture from post-processing!");
+            return;
+        }
+        
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, postProcessing.getFinalImageTexture());
-        glUniform1i(glGetUniformLocation(finalShader, "finalImage"), 0);
+        GLErrorChecker.checkGLError("activating texture unit 0");
         
-        // Render fullscreen quad
+        glBindTexture(GL_TEXTURE_2D, finalImageTexture);
+        GLErrorChecker.checkGLError("binding final image texture");
+        
+        int uniformLocation = glGetUniformLocation(finalShader, "finalImage");
+        GLErrorChecker.validateUniformLocation(uniformLocation, "finalImage", "renderFinalComposition");
+        glUniform1i(uniformLocation, 0);
+        GLErrorChecker.checkGLError("setting finalImage uniform");
+        
+        // Validate and render fullscreen quad
+        if (!GLErrorChecker.validateVAO(finalQuadVAO, "final quad VAO")) {
+            System.err.println("CRITICAL ERROR: Invalid final quad VAO!");
+            return;
+        }
+        
         glBindVertexArray(finalQuadVAO);
+        GLErrorChecker.checkGLError("binding final quad VAO");
+        
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        GLErrorChecker.checkGLError("drawing final quad");
         
         // Restore previous OpenGL state
         glBindVertexArray(previousVAO);
         glUseProgram(previousProgram);
         glActiveTexture(previousActiveTexture);
         glBindTexture(GL_TEXTURE_2D, previousTexture);
+        
+        GLErrorChecker.checkGLError("renderFinalComposition end");
+        System.out.println("Final composition completed successfully");
     }
     
     private void renderSceneGeometry() {
@@ -383,5 +474,111 @@ public class AdvancedRenderingPipeline {
         
         // Restore previous shader program
         glUseProgram(previousProgram);
+    }
+    
+    /**
+     * Validate and reset OpenGL state to prevent GL_INVALID_OPERATION errors
+     * in final composition. This ensures we start with a clean slate.
+     */
+    private void validateAndResetOpenGLState() {
+        // 1. Ensure no framebuffer is bound from previous passes
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        
+        // 2. Reset shader program to 0 (unbound)
+        glUseProgram(0);
+        
+        // 3. Reset vertex array binding
+        glBindVertexArray(0);
+        
+        // 4. Reset texture bindings for commonly used texture units
+        for (int i = 0; i < 8; i++) {
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        }
+        
+        // 5. Reset to texture unit 0
+        glActiveTexture(GL_TEXTURE0);
+        
+        // 6. Reset buffer bindings
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        
+        // 7. Disable any potentially enabled states that might interfere
+        glDisable(GL_BLEND);
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_STENCIL_TEST);
+        glDisable(GL_CULL_FACE);
+        
+        // 8. Reset viewport to screen size (in case it was changed)
+        glViewport(0, 0, screenWidth, screenHeight);
+        
+        System.out.println("DEBUG: OpenGL state reset for final composition");
+    }
+    
+    /**
+     * More aggressive OpenGL state reset for when the standard reset doesn't work
+     */
+    private void aggressiveStateReset() {
+        // First, clear all errors
+        while (glGetError() != GL_NO_ERROR) {
+            // Clear accumulated errors
+        }
+        
+        // Reset absolutely everything we can think of
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindRenderbuffer(GL_RENDERBUFFER, 0);
+        glUseProgram(0);
+        glBindVertexArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        
+        // Reset all texture units
+        for (int i = 0; i < 16; i++) {
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+            glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+        }
+        glActiveTexture(GL_TEXTURE0);
+        
+        // Disable all states
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_STENCIL_TEST);
+        glDisable(GL_BLEND);
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_POLYGON_OFFSET_FILL);
+        glDisable(GL_SCISSOR_TEST);
+        
+        // Reset to default OpenGL state
+        glDepthMask(true);
+        glColorMask(true, true, true, true);
+        glStencilMask(0xFF);
+        
+        // Reset viewport
+        glViewport(0, 0, screenWidth, screenHeight);
+        
+        System.out.println("DEBUG: Aggressive OpenGL state reset completed");
+    }
+    
+    /**
+     * Debug method to log current OpenGL state when errors occur
+     */
+    private void logOpenGLState() {
+        System.out.println("=== OpenGL State Debug ===");
+        System.out.println("Current Program: " + glGetInteger(GL_CURRENT_PROGRAM));
+        System.out.println("Bound VAO: " + glGetInteger(GL_VERTEX_ARRAY_BINDING));
+        System.out.println("Bound Framebuffer: " + glGetInteger(GL_FRAMEBUFFER_BINDING));
+        System.out.println("Active Texture Unit: " + (glGetInteger(GL_ACTIVE_TEXTURE) - GL_TEXTURE0));
+        System.out.println("Bound Texture 2D: " + glGetInteger(GL_TEXTURE_BINDING_2D));
+        System.out.println("Viewport: " + glGetInteger(GL_VIEWPORT));
+        System.out.println("Depth Test: " + (glIsEnabled(GL_DEPTH_TEST) ? "enabled" : "disabled"));
+        System.out.println("Blend: " + (glIsEnabled(GL_BLEND) ? "enabled" : "disabled"));
+        System.out.println("Cull Face: " + (glIsEnabled(GL_CULL_FACE) ? "enabled" : "disabled"));
+        System.out.println("==========================");
     }
 }

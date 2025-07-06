@@ -22,7 +22,7 @@ public class CloudRenderer {
 
     public CloudRenderer(int width, int height) {
         ShaderManager shaderManager = new ShaderManager();
-        this.shaderProgram = shaderManager.loadProgram("resources/shaders/clouds.vert", "resources/shaders/clouds.frag");
+        this.shaderProgram = shaderManager.loadProgram("shaders/clouds.vert", "shaders/clouds.frag");
 
         // Create FBO and texture
         fbo = glGenFramebuffers();

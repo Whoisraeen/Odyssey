@@ -94,7 +94,7 @@ public class TextRenderer {
         
         // Load shaders
         ShaderManager shaderManager = new ShaderManager();
-        this.shaderProgram = shaderManager.loadProgram("resources/shaders/ui.vert", "resources/shaders/ui.frag");
+        this.shaderProgram = shaderManager.loadProgram("shaders/ui.vert", "shaders/ui.frag");
         
         // Set up projection matrix
         Matrix4f projection = new Matrix4f().ortho(0.0f, screenWidth, screenHeight, 0.0f, -1.0f, 1.0f);

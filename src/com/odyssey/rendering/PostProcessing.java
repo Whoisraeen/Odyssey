@@ -153,19 +153,59 @@ public class PostProcessing {
     private void loadShaders() {
         ShaderManager shaderManager = new ShaderManager();
         
+        System.out.println("DEBUG: Loading post-processing shaders...");
+        
         // Load actual shader programs using fullscreen vertex shader
         toneMappingShader = shaderManager.loadProgram(
-            "resources/shaders/fullscreen.vert", "resources/shaders/tone_mapping.frag");
+            "shaders/fullscreen.vert", "shaders/tone_mapping.frag");
+        if (toneMappingShader == 0) {
+            System.err.println("CRITICAL ERROR: Failed to load tone mapping shader");
+            throw new RuntimeException("Tone mapping shader failed to load - this will cause black screen");
+        } else {
+            System.out.println("DEBUG: Tone mapping shader loaded successfully (ID: " + toneMappingShader + ")");
+        }
+        
         bloomExtractShader = shaderManager.loadProgram(
-            "resources/shaders/fullscreen.vert", "resources/shaders/bloom_extract.frag");
+            "shaders/fullscreen.vert", "shaders/bloom_extract.frag");
+        if (bloomExtractShader == 0) {
+            System.err.println("CRITICAL ERROR: Failed to load bloom extract shader");
+            throw new RuntimeException("Bloom extract shader failed to load");
+        } else {
+            System.out.println("DEBUG: Bloom extract shader loaded successfully (ID: " + bloomExtractShader + ")");
+        }
+        
         bloomBlurShader = shaderManager.loadProgram(
-            "resources/shaders/fullscreen.vert", "resources/shaders/bloom_blur.frag");
+            "shaders/fullscreen.vert", "shaders/bloom_blur.frag");
+        if (bloomBlurShader == 0) {
+            System.err.println("CRITICAL ERROR: Failed to load bloom blur shader");
+            throw new RuntimeException("Bloom blur shader failed to load");
+        } else {
+            System.out.println("DEBUG: Bloom blur shader loaded successfully (ID: " + bloomBlurShader + ")");
+        }
+        
         bloomCombineShader = toneMappingShader; // Reuse tone mapping for combine
+        
         fxaaShader = shaderManager.loadProgram(
-            "resources/shaders/fullscreen.vert", "resources/shaders/fxaa.frag");
+            "shaders/fullscreen.vert", "shaders/fxaa.frag");
+        if (fxaaShader == 0) {
+            System.err.println("CRITICAL ERROR: Failed to load FXAA shader");
+            throw new RuntimeException("FXAA shader failed to load");
+        } else {
+            System.out.println("DEBUG: FXAA shader loaded successfully (ID: " + fxaaShader + ")");
+        }
+        
+        System.out.println("DEBUG: All post-processing shaders loaded successfully");
     }
     
     public void render(int colorTexture, int volumetricTexture, int cloudTexture, int depthTexture, float lightningFlash) {
+        System.out.println("DEBUG: PostProcessing.render() called with input texture: " + colorTexture);
+        
+        // Validate input texture
+        if (colorTexture == 0) {
+            System.err.println("CRITICAL ERROR: PostProcessing received invalid color texture (0)");
+            return;
+        }
+        
         // 1. Bloom extraction pass
         if (enableBloom) {
             renderBloomExtraction(colorTexture);
@@ -179,6 +219,16 @@ public class PostProcessing {
         if (enableFXAA) {
             renderFXAA();
         }
+        
+        // Validate final image texture
+        if (finalColorBuffer == 0) {
+            System.err.println("CRITICAL ERROR: PostProcessing finalColorBuffer is 0 after render!");
+        } else {
+            System.out.println("DEBUG: PostProcessing completed successfully, final texture: " + finalColorBuffer);
+        }
+        
+        // Clean up OpenGL state after post-processing to prevent interference with final composition
+        cleanupPostProcessingState();
         
         // Note: Final composition to screen is now handled by AdvancedRenderingPipeline
     }
@@ -349,6 +399,34 @@ public class PostProcessing {
         
         cleanup();
         setupFramebuffers();
+    }
+
+    /**
+     * Clean up OpenGL state after post-processing to ensure clean state for final composition
+     */
+    private void cleanupPostProcessingState() {
+        // Unbind any framebuffers that might still be bound
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        
+        // Unbind shader program
+        glUseProgram(0);
+        
+        // Unbind VAO
+        glBindVertexArray(0);
+        
+        // Reset active texture and unbind textures from units we used
+        for (int i = 0; i < 5; i++) { // We use texture units 0-4 in post-processing
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
+        glActiveTexture(GL_TEXTURE0); // Reset to unit 0
+        
+        // Reset viewport to full screen size
+        glViewport(0, 0, width, height);
+        
+        System.out.println("DEBUG: Post-processing OpenGL state cleaned up");
     }
 
     public void cleanup() {

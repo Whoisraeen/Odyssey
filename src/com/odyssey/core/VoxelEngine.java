@@ -84,6 +84,7 @@ public class VoxelEngine {
     
     private Raycaster.RaycastResult selectedBlock;
     private final Random random = new Random();
+    private int debugFrameCounter = 0;
 
     public VoxelEngine(SoundManager soundManager, int width, int height) {
         this.meshGenerationPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
@@ -121,8 +122,16 @@ public class VoxelEngine {
         this.scene = new Scene();
         scene.setupDefaultLighting();
 
-        // Load shaders
-        this.chunkShaderProgram = shaderManager.loadProgram("resources/shaders/geometry.vert", "resources/shaders/geometry.frag");
+        // Load shaders with validation
+        this.chunkShaderProgram = shaderManager.loadProgram("shaders/geometry.vert", "shaders/geometry.frag");
+        
+        // Validate critical shader programs
+        if (chunkShaderProgram == 0) {
+            System.err.println("CRITICAL ERROR: Failed to load chunk shader program!");
+            throw new RuntimeException("Chunk shader program failed to load - this will cause black screen");
+        } else {
+            System.out.println("DEBUG: Chunk shader program loaded successfully (ID: " + chunkShaderProgram + ")");
+        }
 
         // Create and generate chunks around spawn location
         ChunkPosition spawnChunk = new ChunkPosition(
@@ -131,8 +140,16 @@ public class VoxelEngine {
             (int)Math.floor(spawnLocation.z / CHUNK_SIZE)
         );
         
-        System.out.println("Player spawn location: " + spawnLocation);
-        System.out.println("Spawn chunk: " + spawnChunk.x + ", " + spawnChunk.z);
+        System.out.println("DEBUG: Player spawn location: " + spawnLocation);
+        System.out.println("DEBUG: Spawn chunk: " + spawnChunk.x + ", " + spawnChunk.z);
+        
+        // Verify spawn position is reasonable
+        if (spawnLocation.y < 0 || spawnLocation.y > CHUNK_HEIGHT) {
+            System.err.println("WARNING: Spawn location has invalid Y coordinate: " + spawnLocation.y);
+        }
+        
+        int totalChunksGenerated = 0;
+        int totalBlocksGenerated = 0;
         
         // Generate chunks in a larger area around spawn
         for (int x = spawnChunk.x - 8; x <= spawnChunk.x + 8; x++) {
@@ -140,11 +157,37 @@ public class VoxelEngine {
                 ChunkPosition pos = new ChunkPosition(x, 0, z);
                 Chunk chunk = new Chunk(pos);
                 worldGenerator.generateChunk(chunk);
+                totalChunksGenerated++;
+                
+                // Debug terrain generation
+                int chunkBlocks = 0;
+                for (int cx = 0; cx < CHUNK_SIZE; cx++) {
+                    for (int cy = 0; cy < CHUNK_HEIGHT; cy++) {
+                        for (int cz = 0; cz < CHUNK_SIZE; cz++) {
+                            if (chunk.getBlock(cx, cy, cz) != BlockType.AIR) {
+                                chunkBlocks++;
+                            }
+                        }
+                    }
+                }
+                
+                totalBlocksGenerated += chunkBlocks;
+                
+                if (chunkBlocks == 0) {
+                    System.out.println("WARNING: Chunk " + pos + " was generated but contains no blocks!");
+                } else {
+                    System.out.println("DEBUG: Chunk " + pos + " generated with " + chunkBlocks + " blocks");
+                }
+                
                 chunks.put(pos, chunk);
             }
         }
         
-        System.out.println("Generated " + chunks.size() + " chunks around spawn");
+        System.out.println("DEBUG: Generated " + totalChunksGenerated + " chunks with " + totalBlocksGenerated + " total blocks around spawn");
+        
+        // Set camera to look at spawn area for debugging
+        camera.setPosition(spawnLocation.x, spawnLocation.y + 20.0f, spawnLocation.z + 20.0f);
+        System.out.println("DEBUG: Camera positioned at " + camera.getPosition() + " for spawn observation");
         
         // Request initial mesh generation for all chunks
         for (Chunk chunk : chunks.values()) {
@@ -226,6 +269,30 @@ public class VoxelEngine {
                     ChunkMesh[] meshes = entry.getValue().get();
                     Chunk chunk = chunks.get(entry.getKey());
                     if (chunk != null) {
+                        // Debug mesh generation
+                        int opaqueVertices = meshes[0].getVertices().length;
+                        int transparentVertices = meshes[1].getVertices().length;
+                        
+                        if (opaqueVertices == 0 && transparentVertices == 0) {
+                            System.out.println("DEBUG: Chunk " + entry.getKey() + " generated empty mesh (no visible blocks)");
+                            
+                            // Let's check if the chunk actually has any blocks
+                            int totalBlocks = 0;
+                            for (int x = 0; x < CHUNK_SIZE; x++) {
+                                for (int y = 0; y < CHUNK_HEIGHT; y++) {
+                                    for (int z = 0; z < CHUNK_SIZE; z++) {
+                                        if (chunk.getBlock(x, y, z) != BlockType.AIR) {
+                                            totalBlocks++;
+                                        }
+                                    }
+                                }
+                            }
+                            System.out.println("DEBUG: Chunk " + entry.getKey() + " has " + totalBlocks + " non-air blocks");
+                        } else {
+                            System.out.println("DEBUG: Chunk " + entry.getKey() + " mesh generated: " + 
+                                opaqueVertices/8 + " opaque vertices, " + transparentVertices/8 + " transparent vertices");
+                        }
+                        
                         chunk.uploadMeshToGPU(meshes[0], meshes[1]); // [0] is opaque, [1] is transparent
                         chunksChanged = true; // Mark that chunks need scene update
                     }
@@ -257,6 +324,12 @@ public class VoxelEngine {
             updateSceneWithChunks();
             chunksChanged = false;
         }
+        
+        // Debug system status every 300 frames (5 seconds at 60 FPS)
+        if (debugFrameCounter % 300 == 0) {
+            printSystemStatus();
+        }
+        debugFrameCounter++;
         
         // Update scene
         scene.update(0.016f); // Assuming 60 FPS
@@ -549,5 +622,60 @@ public class VoxelEngine {
     
     public InputManager getInputManager() {
         return inputManager;
+    }
+    
+    /**
+     * Print comprehensive system status for debugging black screen issues
+     */
+    private void printSystemStatus() {
+        System.out.println("=== VOXEL ENGINE DEBUG STATUS ===");
+        
+        // Camera status
+        Vector3f camPos = camera.getPosition();
+        System.out.println("Camera Position: " + camPos);
+        System.out.println("Camera Yaw: " + camera.getYaw() + ", Pitch: " + camera.getPitch());
+        System.out.println("Camera FOV: " + camera.getFov() + ", Aspect: " + camera.getAspectRatio());
+        
+        // Player status
+        Vector3f playerPos = player.getPosition();
+        System.out.println("Player Position: " + playerPos);
+        
+        // Chunk status
+        System.out.println("Total Chunks Loaded: " + chunks.size());
+        int chunksWithVAO = 0;
+        int totalBlocksInChunks = 0;
+        
+        for (Chunk chunk : chunks.values()) {
+            if (chunk.getVao() != 0) {
+                chunksWithVAO++;
+            }
+            
+            // Count blocks in a sample of chunks
+            if (chunksWithVAO < 5) {
+                for (int x = 0; x < CHUNK_SIZE; x++) {
+                    for (int y = 0; y < CHUNK_HEIGHT; y++) {
+                        for (int z = 0; z < CHUNK_SIZE; z++) {
+                            if (chunk.getBlock(x, y, z) != BlockType.AIR) {
+                                totalBlocksInChunks++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        System.out.println("Chunks with VAO (renderable): " + chunksWithVAO + "/" + chunks.size());
+        System.out.println("Pending mesh futures: " + meshingFutures.size());
+        
+        // Scene status
+        System.out.println("Scene total objects: " + scene.getObjects().size());
+        System.out.println("Scene opaque objects: " + scene.getOpaqueObjects().size());
+        System.out.println("Scene transparent objects: " + scene.getTransparentObjects().size());
+        System.out.println("Scene lights: " + scene.getLights().size());
+        
+        // Shader status
+        System.out.println("Chunk shader program ID: " + chunkShaderProgram);
+        
+        System.out.println("================================");
     }
 }

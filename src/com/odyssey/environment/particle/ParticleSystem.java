@@ -25,7 +25,7 @@ public class ParticleSystem {
     public ParticleSystem(int maxParticles) {
         this.maxParticles = maxParticles;
         ShaderManager shaderManager = new ShaderManager();
-        this.shaderProgram = shaderManager.loadProgram("resources/shaders/particle.vert", "resources/shaders/particle.frag");
+        this.shaderProgram = shaderManager.loadProgram("shaders/particle.vert", "shaders/particle.frag");
         this.vao = glGenVertexArrays();
         this.vbo = glGenBuffers();
 
